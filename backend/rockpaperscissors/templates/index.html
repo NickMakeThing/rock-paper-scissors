@@ -1,0 +1,16 @@
+{% load static %}
+<!-- {\% load render_bundle from webpack_loader %} -->
+<html>
+    <head>
+        <!-- {\% render_bundle 'main' 'css' %} -->    
+    </head>
+    <body>
+        <div id="app">
+        </div>
+        <!-- {\% render_bundle 'main' 'js' %} -->
+        <script src="{% static 'main.js' %}" type="text/javascript"></script>
+    </body>       
+</html>
+<!--
+ <script src="{\% static 'build/main.js' %}" type="text/javascript"></script>
+-->
