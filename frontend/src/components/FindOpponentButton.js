@@ -2,11 +2,17 @@ import React from 'react'
 
 export default function FindOpponentButton(props){
     return (
-        <button
-            style={buttonStyle} 
-            onClick={props.onClick}>
-            Find Opponent
-        </button>
+        <div 
+            style={buttonStyle} >
+            <span 
+                style={{color:'red'}}>
+                {props.error}
+            </span><br/>
+            <button 
+                onClick={props.onClick}>
+                Find Opponent
+            </button>
+        </div>
     )
 }
 
