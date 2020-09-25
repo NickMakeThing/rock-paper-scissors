@@ -5,7 +5,7 @@ import LeaderBoard from './components/LeaderBoard'
 import Spinner from './components/Spinner'
 import FindOpponentButton from './components/FindOpponentButton'
 //where to put css?
-//
+//sass/styled components
 
 //-------------------------------------------------------------
 export default function App(){
@@ -14,12 +14,12 @@ export default function App(){
     const [leaderBoard,setLeaderBoard] = useState(false)
     const [userId, setUserId] = useState(null)
     const [error, setError] = useState(null)
-    const stateArgs = { userId, setOpponentName, setLoading, setError}
+    const stateArgs = {userId, setOpponentName, setLoading, setError}
 
     function displaySpinner(){
         return [<Header/>,<Spinner/>]
     }
-    console.log(error)
+
     function showContent(){
         if (opponentName) {
             return <Game/>
@@ -29,7 +29,7 @@ export default function App(){
                     onClick={()=>findOpponentRequest(stateArgs)}/>
         }
     }
-
+    
     if (loading) {
         return displaySpinner()
     }
@@ -46,7 +46,7 @@ export default function App(){
 
 //-------------------------------------------------------------
 //try var with ()=> ?
-function findOpponentRequest (state) {
+function findOpponentRequest(state) {
     state.setLoading(true)
     fetch('http://localhost:8000/find/'+state.userId,{
         method:'PATCH',

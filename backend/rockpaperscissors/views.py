@@ -17,7 +17,9 @@ class FindOpponent(UpdateAPIView):
     def patch(self, request, *args, **kwargs):
         self.partial_update(request, *args, **kwargs)    
         match = PlayerMatch.objects.filter(user=kwargs['pk'])
-
+#polling from frontend is short term solution to sending back match link
+#websockets better
+#something will time out if i dont send back http response quick enough so while with sleep is bad idea. 
 
         waiting_players = PlayerStatus.objects.filter(looking_for_opponent=True).order_by('score')
         print('\n\n')

@@ -11,7 +11,7 @@ class PlayerStatus(models.Model):
     def __str__(self):
         return '%s' % (self.user)
 
-class Match(models.Model):
+class Match(models.Model): #can merge with PlayerMatch
     name = models.CharField(max_length=25)
     #name is hash using both usernames and salt
     #used in url sent to both players
