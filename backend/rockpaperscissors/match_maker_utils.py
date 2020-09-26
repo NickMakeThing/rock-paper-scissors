@@ -1,7 +1,6 @@
 from .models import Match, PlayerMatch
 from random import randint
 import hashlib
-#rename ...utils
 
 def create_random_string():
     r_string=''
@@ -55,8 +54,11 @@ def map_player_to_player_of_closest_score(waiting):
         else:
             closest_scores.append({i:previous})
             continue
-        if previous_score<next_score:
+        if previous_score < next_score:
             closest_scores.append({i:previous})
+        elif previous_score == next_score:
+            random_pick = random.choice([previous,next])
+            closest_scores.append({i:random_pick})
         else:
             closest_scores.append({i:next})
     return closest_scores
