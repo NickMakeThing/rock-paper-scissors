@@ -12,23 +12,14 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 import os
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'ybtlq6zgg7if%13yj19pu7qp^xnx1fp+54*d8-)44yjz3%y^4@'
 
-# SECURITY WARNING: don't run with debug turned on in production!
+
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
-
-# Application definition
 
 INSTALLED_APPS = [
     'rest_framework',
@@ -39,7 +30,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'webpack_loader',
-    'rockpaperscissors'
+    'rockpaperscissors',
+    'channels'
 ]
 
 MIDDLEWARE = [
@@ -84,6 +76,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
+ASGI_APPLICATION = "backend.routing.application"
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases

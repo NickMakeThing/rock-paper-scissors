@@ -1,5 +1,5 @@
 import pytest
-import rockpaperscissors.match_maker_utils as utils
+import rockpaperscissors.match_maker as utils
 from rockpaperscissors.models import Match, PlayerMatch, PlayerStatus
 from django.contrib.auth.models import User
 
@@ -48,7 +48,6 @@ def _get_test_data():
         'player_matches': player_matches
     }
 
-
 @pytest.mark.django_db
 def test_map_player_to_player_of_closest_score():
     test_data = _get_test_data()
@@ -76,6 +75,7 @@ def test_create_matches():
     assert player_matches[0].match == player_matches[1].match
     assert player_matches[2].match == player_matches[3].match
     assert player_matches[1].match != player_matches[2].match
+    assert matches[0].name != matches[1].name
     for row,testcase in zip(player_matches,result):
         assert row.user.username == testcase['user']
         assert row.match.id == testcase['match']

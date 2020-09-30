@@ -18,8 +18,14 @@ class Match(models.Model): #can merge with PlayerMatch
     #also 
 
 class PlayerMatch(models.Model):
+    MOVE_CHOICES = [
+        ('r','rock'),
+        ('p','paper'),
+        ('s','scissors')    
+    ] 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     match = models.ForeignKey(Match, on_delete=models.CASCADE)
+    move = models.CharField(max_length=1,choices=MOVE_CHOICES ,null=True)
     game_score = models.IntegerField(default=0)
 
 
