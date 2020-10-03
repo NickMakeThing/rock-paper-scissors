@@ -27,7 +27,6 @@ def create_matches(matches):
 
             player_matches.append(PlayerMatch.objects.create(user=player1,match=match_object))
             player_matches.append(PlayerMatch.objects.create(user=player2,match=match_object))
-    print(connection.queries)
 
 def match_players_if_they_map_to_eachother(closest_scores):
     matches=[]

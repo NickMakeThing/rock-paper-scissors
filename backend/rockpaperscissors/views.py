@@ -1,46 +1,24 @@
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from rest_framework.generics import CreateAPIView, UpdateAPIView
-from .serializers import MatchMakingSerializer
-from .models import PlayerStatus, Match, PlayerMatch
-from time import sleep
+from .serializers import PlayerSerializer
+from .match_maker import create_random_string, create_match_name as create_cookie
 
 class Test(TemplateView):
     template_name='index.html'
 
-class FindOpponent(UpdateAPIView):
-    serializer_class = MatchMakingSerializer
-    def get_queryset(self):
-        self.queryset = PlayerStatus.objects.filter(user=self.kwargs['pk'])
-        return PlayerStatus.objects.filter(user=self.kwargs['pk'])
-
-    def patch(self, request, *args, **kwargs):
-        self.partial_update(request, *args, **kwargs)    
-        match = PlayerMatch.objects.filter(user=kwargs['pk'])
-#polling from frontend is short term solution to sending back match link
-#websockets better
-#something will time out if i dont send back http response quick enough so while with sleep is bad idea. 
-
-        waiting_players = PlayerStatus.objects.filter(looking_for_opponent=True).order_by('score')
-        print('\n\n')
-        for i in waiting_players:
-            print(i,list(waiting_players).index(i))
-        print('\n\n')
+class CreatePlayerView(CreateAPIView):
+    serializer_class = PlayerSerializer
     
-        #wait for worker to find a match every second
-        #once a match is found, respond with the url to the match
-        while not match:
-            match= PlayerMatch.objects.filter(user=kwargs['pk'])
-            sleep(2)
-            break
-        print('match:', match_found)
+    def create(self, request, *args, **kwargs):
+        random_string = create_random_string()
+        cookie = create_cookie(request.data['name'] + random_string)
+        request.data['cookie']=cookie
+        response = super().create(request)
+        response.set_cookie(
+            'names',
+            {request.data['name']:cookie},
+            max_age=31536000000
+        )
         
-
-
-
-
-
-
-#goes into different app called game?
-class GameAction(CreateAPIView):
-    pass
+        return response

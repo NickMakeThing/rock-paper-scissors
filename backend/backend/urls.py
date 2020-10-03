@@ -4,5 +4,5 @@ from rockpaperscissors import views
 
 urlpatterns = [
     path('', views.Test.as_view()),
-    path('find/<int:pk>', views.FindOpponent.as_view())
+    path('create/',views.CreatePlayerView.as_view(), name='create')
 ]
