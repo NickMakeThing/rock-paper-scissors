@@ -10,7 +10,7 @@ class PlayerStatus(models.Model):
     cookie = models.CharField(max_length=32)
     
     def __str__(self):
-        return '%s' % (self.user)
+        return '%s' % (self.name)
 
 class Match(models.Model): 
     name = models.CharField(max_length=25)

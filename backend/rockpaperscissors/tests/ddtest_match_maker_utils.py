@@ -13,9 +13,8 @@ def _get_test_data():
         ["Sam",150]
     ]
 
-    for username, score in player_data:
-        user = User.objects.create(username=username)
-        PlayerStatus.objects.create(user=user, score=score, looking_for_opponent=True)
+    for name, score in player_data:
+        PlayerStatus.objects.create(name=name, score=score, looking_for_opponent=True)
 
     players = PlayerStatus.objects.all()
     players = list(players)
@@ -35,10 +34,10 @@ def _get_test_data():
     ]
     
     player_matches = [
-        {'user':'Bob','match':1,'score':0},
-        {'user':'Nick','match':1,'score':0},
-        {'user':'Sally','match':2,'score':0},
-        {'user':'Joe','match':2,'score':0}
+        {'name':'Bob','match':1,'score':0},
+        {'name':'Nick','match':1,'score':0},
+        {'name':'Sally','match':2,'score':0},
+        {'name':'Joe','match':2,'score':0}
     ]
 
     return {
@@ -77,7 +76,7 @@ def test_create_matches():
     assert player_matches[1].match != player_matches[2].match
     assert matches[0].name != matches[1].name
     for row,testcase in zip(player_matches,result):
-        assert row.user.username == testcase['user']
+        assert row.player.name == testcase['name']
         assert row.match.id == testcase['match']
         assert row.game_score == testcase['score']
 

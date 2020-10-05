@@ -12,21 +12,20 @@ def create_random_string():
 def create_match_name(string):
     arg=bytes(string, 'utf-8')
     return hashlib.md5(arg).hexdigest()
-    
+
 def create_matches(matches):
     random_string = create_random_string()
-    player_matches = []
     from django.db import connection
     with transaction.atomic():
         for i in matches:
-            player1 = i[0].user; player2 = i[1].user
-            hash_input = random_string + player1.username + player2.username
+            player1 = i[0]; player2 = i[1]
+            hash_input = random_string + player1.name + player2.name
             match_name = create_match_name(hash_input)
-
             match_object = Match.objects.create(name=match_name)
-
-            player_matches.append(PlayerMatch.objects.create(user=player1,match=match_object))
-            player_matches.append(PlayerMatch.objects.create(user=player2,match=match_object))
+            for j in [player1,player2]: #could make its own function
+                PlayerMatch.objects.create(player=j,match=match_object)
+                j.looking_for_opponent = False
+                j.save()
 
 def match_players_if_they_map_to_eachother(closest_scores):
     matches=[]

@@ -36,14 +36,13 @@ def send_to_channel_layer(winner,loser,result=None):
             'game_finished': result
         }
     })
-
+    
 def complete_round(winner,loser):
     loser.move = None
     loser.save()
     winner.move = None
     winner.game_score += 1
     winner.save()
-
     send_to_channel_layer(winner,loser)
 
 def complete_game(winner,loser):
