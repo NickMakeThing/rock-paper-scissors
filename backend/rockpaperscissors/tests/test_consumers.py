@@ -28,7 +28,7 @@ async def test_match_making_consumer():
         'name': 'greg',
         'cookie': '123456'
     }))
-    response = await greg_communicator.receive_from()
+    #response = await greg_communicator.receive_from()
     #print(response)
     await greg_communicator.disconnect()
     player = await sync_to_async(PlayerStatus.objects.first)()

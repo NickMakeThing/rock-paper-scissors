@@ -10,7 +10,7 @@ class MatchFindingConsumer(WebsocketConsumer):
 
     def receive(self, text_data): #data
 
-        
+        print('fdsfdsf')
         data=json.loads(text_data)
         player = PlayerStatus.objects.get(name=data['name'])
         print(player.cookie)
@@ -18,7 +18,7 @@ class MatchFindingConsumer(WebsocketConsumer):
         if player.cookie == data['cookie']:
             player.looking_for_opponent = True
             player.save()
-        self.send('this line is needed for tests to work') 
+        #self.send('this line is needed for tests to work') 
         """
         while(player.looking_for_opponent):
             sleep(2)
