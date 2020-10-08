@@ -1,26 +1,29 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import LeaderBoard from './LeaderBoard'
+import Cookie from 'js-cookie'
 
 export default function Header(props){
     return (
         <header style={{padding:'10px'}}>
             <h2 style={{margin:0}}>
                 <div style={leftSideStyle}>
-                    {username} score:{rating} 
+                    <div style={{display:'inline-block', marginRight: '10px'}}>
+                        <span>
+                            {props.userId}
+                        </span> 
+                    </div>
+                    score:{100} 
                 </div>
                 <div style={rightSideStyle}>
                     <LeaderBoard
                         leaderBoard={props.leaderBoard}
                         setLeaderBoard={props.setLeaderBoard}/>
-                    <a href='#'>logout</a>
                 </div>
             </h2>
         </header>
     )
 }
 
-const username = 'username'
-const rating = 1234
 const leftSideStyle = {
     display:'inline-block',
     width:'50%',

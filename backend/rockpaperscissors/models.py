@@ -1,6 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+MOVE_CHOICES = (
+    ('r','rock'),
+    ('p','paper'),
+    ('s','scissors')    
+)
+
 class PlayerStatus(models.Model):
     name = models.CharField(unique=True, max_length=21)
     score = models.IntegerField(default=100)
@@ -16,11 +22,6 @@ class Match(models.Model):
     name = models.CharField(max_length=25)
 
 class PlayerMatch(models.Model):
-    MOVE_CHOICES = [
-        ('r','rock'),
-        ('p','paper'),
-        ('s','scissors')    
-    ] 
     player = models.ForeignKey(PlayerStatus, on_delete=models.CASCADE)
     match = models.ForeignKey(Match, on_delete=models.CASCADE)
     move = models.CharField(max_length=1,choices=MOVE_CHOICES ,null=True)

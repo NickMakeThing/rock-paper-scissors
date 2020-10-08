@@ -5,3 +5,4 @@ class PlayerSerializer(serializers.ModelSerializer):
     class Meta:    
         model=PlayerStatus
         fields = ('name','cookie')
+
