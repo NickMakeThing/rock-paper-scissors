@@ -26,16 +26,21 @@ const buttonStyle={
 function findOpponent(state) {
     state.setLoading(true)
     const webSocket = new WebSocket('ws://'+window.location.host+'/ws/find_match/')
+    console.log(webSocket)
     webSocket.onmessage = function(e) {
         const data = JSON.parse(e.data)
         console.log(data)
+        //webSocket.close()
     }
     webSocket.onclose = function(e) {
         console.error('socket closed.')
     }
-    /*webSocket.send(JSON.stringify({
-        'message': message
-    }))
+    setTimeout(() => {
+        console.log(webSocket)
+        webSocket.send(state.userId)
+    }, 1000)
+    
+    /*
     /////
     fetch('http://localhost:8000/ws/'+state.userId,{
         method:'PATCH',

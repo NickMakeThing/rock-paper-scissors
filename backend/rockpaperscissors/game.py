@@ -17,21 +17,35 @@ def decide_winner(player1,player2):
     }
     return CASES[player1.move+'_'+player2.move]
 
-def change_rating(winner_rating, loser_rating):
-    return round((loser_rating/winner_rating)*10)
+def get_score_change(winner_rating, loser_rating):
+    difference = abs(winner_rating-loser_rating)
+    change = 10
+    if winner_rating<loser_rating: 
+        multiplier = 1 + difference/100
+        change = int(multiplier*change)
+    if winner_rating>loser_rating:
+        multiplier = 1 - difference/100
+        change = round(multiplier*change)
+
+    if change > 40:
+        return 40
+    if change < 2:
+        return 2
+    return change
 
 def send_to_channel_layer(winner,loser,result=None):
     match = winner.match
     channel_layer = channels.layers.get_channel_layer()
     async_to_sync(channel_layer.send)(match.name, {
-        'type': 'game.update',{
+        'type': 'game.update',
+        'message':{ #
             'winner':{
-                'name': winner.name,
-                'score': winner.score,
+                'name': winner.player.name,
+                'score': winner.game_score
             },
             'loser':{
-                'name': loser.name,
-                'score': loser.score
+                'name': loser.player.name, #queries?
+                'score': loser.game_score
             },
             'game_finished': result
         }
@@ -46,23 +60,26 @@ def complete_round(winner,loser):
     send_to_channel_layer(winner,loser)
 
 def complete_game(winner,loser):
+    
     player_status_winner = winner.player
     player_status_loser = loser.player
-    rating_change_value = get_rating_change(
-        player_status_winner.rating,
-        player_status_loser.rating
+    score_change_value = get_score_change(
+        player_status_winner.score,
+        player_status_loser.score
     )
-    player_status_winner.wins += 1
-    player_status_winner.rating += rating_change_value
-    player_status_winner.save()
 
+    player_status_winner.wins += 1
+    player_status_winner.score += score_change_value
+    player_status_winner.save()
+    
     player_status_loser.losses += 1
-    player_status_loser.rating -= rating_change_value
+    player_status_loser.score -= score_change_value
     player_status_loser.save()
     
-    result = rating_change_value
+    result = score_change_value
     send_to_channel_layer(winner,loser,result)
-
+    Match.objects.get(name=winner.match.name).delete()
+    
 def game_round(player1, player2):
     if player1.move and player2.move and player1.match == player2.match:
         winner = decide_winner(player1,player2)
@@ -80,7 +97,7 @@ def game_round(player1, player2):
             loser = player1"""
             
 def run_game(players):
-    if len(players) > 2 && len(players) % 2 == 0:
+    if len(players) > 2 and len(players) % 2 == 0:
         with transaction.atomic():
             for i in range(0,len(players),2):
                 game_round(players[i],players[i+1])

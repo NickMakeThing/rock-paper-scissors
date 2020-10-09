@@ -4,12 +4,25 @@ from .models import PlayerStatus, PlayerMatch, Match
 from asgiref.sync import async_to_sync
 from time import sleep
 from .forms import MoveForm
+import threading
+
+def look_for_match(player, self_instance):
+    while(player.looking_for_opponent and self_instance.connected):
+        print('still running')
+        player_match = PlayerMatch.objects.filter(player=player.id)
+        if player_match.exists():
+            player.looking_for_opponent = False
+            player_match = player_match.first()
+            self_instance.send(text_data=json.dumps({
+                "match_name": player_match.match.name #make it so this doesnt do 2 queries
+            }))
+        sleep(2)
 
 class MatchFindingConsumer(WebsocketConsumer):
     def connect(self):
+        self.accept()
         self.status_changed = False
         self.connected = True
-        self.accept()
         
     def receive(self, text_data): #data
         name = text_data 
@@ -20,26 +33,15 @@ class MatchFindingConsumer(WebsocketConsumer):
             player.save()
             self.status_changed = True
             self.player = player
-            while(player.looking_for_opponent and self.connected):
-                player_match = PlayerMatch.objects.filter(player=player.id)
-                if player_match.exists():
-                    player.looking_for_opponent = False
-                    player_match = player_match.first()
-                    self.send(text_data=json.dumps({
-                        "match_name": player_match.match.name #make it so this doesnt do 2 queries
-                    }))#continues to run after 'disconnect'
-                sleep(2)
-                   
-        #player sends details with cookie
-        #check if name in table has cookie
-        #update looking for to true
-        #while loop: if playermatch exist, send match number
-        #when client gets matchnumber, he disconnect and connects with match in the url.
+            waiting_for_opponent = threading.Thread(target=look_for_match, args=(player,self))
+            waiting_for_opponent.start()
+            #when client gets matchnumber, he disconnect and connects with match in the url.
 
     def disconnect(self, close_code):
         self.connected = False
         if self.status_changed:
-            #if match, cancel match
+            #match being made just afterwards (needs more detail for this to work):
+            #   if some condition, delete match if it exists.
             self.player.looking_for_opponent = False
             self.player.save()
 
