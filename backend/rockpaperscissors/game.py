@@ -33,24 +33,26 @@ def get_score_change(winner_rating, loser_rating):
         return 2
     return change
 
-def send_to_channel_layer(winner,loser,result=None):
+def send_to_channel_layer(winner,loser,rating_change=None):
     match = winner.match
     channel_layer = channels.layers.get_channel_layer()
-    async_to_sync(channel_layer.send)(match.name, {
+    #from channels.layers import channel_layers
+    #print(channel_layers['test_channel'])
+    async_to_sync(channel_layer.group_send)(match.name, {
         'type': 'game.update',
         'message':{ #
             'winner':{
                 'name': winner.player.name,
-                'score': winner.game_score
+                'game_score': winner.game_score
             },
             'loser':{
                 'name': loser.player.name, #queries?
-                'score': loser.game_score
+                'game_score': loser.game_score
             },
-            'game_finished': result
+            'game_finished': rating_change
         }
-    })
-    
+    })  
+
 def complete_round(winner,loser):
     loser.move = None
     loser.save()
@@ -67,7 +69,7 @@ def complete_game(winner,loser):
         player_status_winner.score,
         player_status_loser.score
     )
-
+    winner.game_score += 1
     player_status_winner.wins += 1
     player_status_winner.score += score_change_value
     player_status_winner.save()
@@ -81,10 +83,10 @@ def complete_game(winner,loser):
     Match.objects.get(name=winner.match.name).delete()
     
 def game_round(player1, player2):
-    if player1.move and player2.move and player1.match == player2.match:
-        winner = decide_winner(player1,player2)
+    if player1.move and player2.move:
+        winner = decide_winner(player1,player2)       
         loser = [x for x in [winner,player1,player2] if x != winner][0] 
-
+        
         if winner.game_score < 2:
             complete_round(winner,loser)  
         else:
@@ -97,9 +99,14 @@ def game_round(player1, player2):
             loser = player1"""
             
 def run_game(players):
-    if len(players) > 2 and len(players) % 2 == 0:
+    if len(players) >= 2 and len(players) % 2 == 0:
         with transaction.atomic():
             for i in range(0,len(players),2):
-                game_round(players[i],players[i+1])
-                
+                player1 = players[i]
+                player2 = players[i+1]
+                if player1.match == player2.match:
+                    game_round(player1,player2)
+                else:
+                    assert('player mismatch')
+                    print('\n\n\nbad match\n\n')
 

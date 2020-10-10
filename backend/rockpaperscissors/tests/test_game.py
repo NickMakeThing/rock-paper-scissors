@@ -1,9 +1,14 @@
 import pytest
+import channels.layers as layers
 import rockpaperscissors.game as game
 from rockpaperscissors.models import Match, PlayerMatch, PlayerStatus
+from channels.testing import WebsocketCommunicator
+from rockpaperscissors.consumers import GameUpdateConsumer
+from asgiref.sync import sync_to_async, async_to_sync
+from channels.db import database_sync_to_async as db_async
 
-def make_data(name1,name2):
-    match = Match.objects.create(name='dsfgfdgfd')    
+def make_data(name1,name2,match='dsfgfdgfd'):
+    match = Match.objects.create(name=match)    
     player1 = PlayerStatus.objects.create(name=name1)
     player2 = PlayerStatus.objects.create(name=name2)
     player1 = PlayerMatch.objects.create(player=player1, match=match)
@@ -32,11 +37,6 @@ def test_change_rating():
     assert game.get_score_change(110,100) < game.get_score_change(100,100) < game.get_score_change(100,110)
     assert game.get_score_change(0,300) == 40 == game.get_score_change(-300,300)
     assert game.get_score_change(300,0) == 2 == game.get_score_change(300,-300)
-
-@pytest.mark.django_db
-def test_send_to_channel_layer():
-    pass
-    #check with complete round and complete game
 
 @pytest.mark.django_db    
 def test_complete_round():
@@ -79,25 +79,100 @@ def test_game_round():
     match = data['match']
     assert bob.game_score == 0
     assert Match.objects.filter(name=match.name).exists() == True
-    for i in range(1,4):
+    for i in range(3):
         bob.move = 'r'; bob.save()
         greg.move = 's'; greg.save()
         game.game_round(bob,greg)
         bob = PlayerMatch.objects.filter(player=bob.player)
-        if i == 1:
+        if i == 0:
             bob = bob.first()
             assert bob.game_score == 1
             assert bob.move == None
-        if i == 2:
+        if i == 1:
             bob = bob.first()
             assert bob.game_score == 2
-        if i == 3:
+        if i == 2:
             assert bob.exists() == False
             assert PlayerStatus.objects.get(name='bob').wins == 1
             assert Match.objects.filter(name=match.name).exists() == False
+        
+@pytest.mark.django_db
+def test_send_to_channel_layer(): #may need to redo to call function directly
+    data = make_data('bob','greg')
+    bob = data['player1']
+    greg = data['player2']
+    match = data['match']
+    channel_layer = layers.get_channel_layer()
+    async_to_sync(channel_layer.flush)()
+    async_to_sync(channel_layer.group_add)(
+        match.name,
+        'test_channel'
+    )
+    for i in range(3):
+        bob = PlayerMatch.objects.get(player=bob.player)
+        bob.move = 'r'; bob.save()
+        greg.move = 's'; greg.save()
+        game.game_round(bob,greg)
+        response = async_to_sync(channel_layer.receive)('test_channel')
+        message = response['message']
+        if i == 0:
+            assert message['winner']['name'] == 'bob'
+            assert message['winner']['game_score'] == 1
+            assert message['loser']['name'] == 'greg'
+            assert message['loser']['game_score'] == 0
+            assert message['game_finished'] == None
+        if i == 2:
+            assert message['winner']['name'] == 'bob'
+            assert message['winner']['game_score'] == 3
+            assert message['loser']['name'] == 'greg'
+            assert message['loser']['game_score'] == 0
+            assert message['game_finished'] == 10
 
-          
 @pytest.mark.django_db           
 def test_run_game():
-    pass   
-                
+    player_matches = [
+        ['bob','greg','1'],
+        ['joe','sam','2'],
+        ['alex','mister','3'],
+        ['jack','jill','4'],
+        ['rufus','rover','5'],
+    ]
+    for player1,player2,match in player_matches:
+        data = make_data(player1,player2,match)
+        player1 = data['player1']
+        player2 = data['player2']
+        player1.move = 'r'; player1.save()
+        player2.move = 's'; player2.save()
+    players = list(PlayerMatch.objects.all().order_by('match'))
+    game.run_game(players)
+    players = list(PlayerMatch.objects.all().order_by('match'))
+    for i in players:
+        if players.index(i)%2 == 0:
+            assert i.game_score == 1
+        else:
+            assert i.game_score == 0
+    PlayerStatus.objects.all().delete()
+    Match.objects.all().delete()
+    data = make_data('bob','greg')
+    match = Match.objects.create(name='wrong_match')
+    player1 = data['player1']
+    player2 = data['player2']
+    player1.match = match; player1.save()
+    game.run_game([player1,player2])
+    #get assertion working so i can test it
+"""def s():
+
+    @pytest.mark.asyncio
+    async def connect():   
+        communicator = WebsocketCommunicator(GameUpdateConsumer, "ws/match/dsfgfdgfd")
+        connected = await communicator.connect()
+        assert connected
+        return communicator
+
+    @pytest.mark.asyncio
+    async def receive(communicator): 
+        response = await communicator.receive_from(timeout=2)
+        return response"""
+
+    
+
