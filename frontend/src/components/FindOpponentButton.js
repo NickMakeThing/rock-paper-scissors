@@ -9,7 +9,7 @@ export default function FindOpponentButton(props){
                 {props.error}
             </span><br/>
             <button 
-                onClick={()=>findOpponent(props.stateArgs)}>
+                onClick={()=>findOpponent(props.stateControl,props.userId)}>
                 Find Opponent
             </button>
         </div>
@@ -22,24 +22,29 @@ const buttonStyle={
     left: '50%',
     transform: 'translateX(-50%) translateY(-75%)'
 }
-//stateArgs = {userId, setOpponentName, setLoading, setError}
-function findOpponent(state) {
+//stateControl = {setOpponentName, setLoading, setError}
+function findOpponent(state,userId) {
     state.setLoading(true)
     const webSocket = new WebSocket('ws://'+window.location.host+'/ws/find_match/')
-    console.log(webSocket)
     webSocket.onmessage = function(e) {
         const data = JSON.parse(e.data)
-        console.log(data)
-        //webSocket.close()
+        webSocket.close()
+
+        console.log(data.match_name)
+        state.setOpponentName(data.opponent)
+        state.setMatch({name:data.match_name,connected:false}) 
+        //connectToMatch(state, match)
     }
     webSocket.onclose = function(e) {
         console.error('socket closed.')
     }
     setTimeout(() => {
         console.log(webSocket)
-        webSocket.send(state.userId)
+        webSocket.send(userId)
     }, 1000)
-    
+}
+    //send webSocket.send(stuff)
+
     /*
     /////
     fetch('http://localhost:8000/ws/'+state.userId,{
@@ -64,4 +69,3 @@ function findOpponent(state) {
         })
         .then(()=>state.setLoading(false))*/
         //.then(data => console.log(data))
-}

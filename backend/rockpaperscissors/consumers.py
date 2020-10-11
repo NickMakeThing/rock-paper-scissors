@@ -27,6 +27,7 @@ class MatchFindingConsumer(WebsocketConsumer):
     def receive(self, text_data): #data
         name = text_data 
         cookie = self.scope['cookies'][name]
+        print(self.scope['cookies'],cookie)
         player = PlayerStatus.objects.get(name=name)
         if player.cookie == cookie:
             player.looking_for_opponent = True
@@ -49,7 +50,8 @@ class GameUpdateConsumer(WebsocketConsumer):
 
     def connect(self):
         self.match = self.scope['path'][10:]# [10:-1] if leading /, also can split by / get last.
-        if Match.objects.filter(name=self.match).exists():
+        contestants = PlayerMatch.objects.filter(name=self.match)
+        if contestants.exists():
             #check if playermatch has match
             #check cookie?
             async_to_sync(self.channel_layer.group_add)(
@@ -57,6 +59,8 @@ class GameUpdateConsumer(WebsocketConsumer):
                 self.channel_name
             )
             self.accept()
+            self.scope['cookies']
+            self.send(text_data=json.dumps(update))
             print('match found')
         else: 
             print('no match found')

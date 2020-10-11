@@ -16,41 +16,59 @@ export default function App(){
     const [leaderBoard,setLeaderBoard] = useState(false)
     const [userId, setUserId] = useState(null)
     const [error, setError] = useState(null)
-    const stateArgs = {userId, setOpponentName, setLoading, setError}
+    const [match, setMatch] = useState({name:null, connected:false})
+    const stateControl = {setMatch, setOpponentName, setLoading, setError}
 
-    function setCurrentUser(name){
-        window.localStorage.setItem('currentUser', name)
-        setUserId(name)
-    }
-    function displaySpinner(){
-        return [<Header/>,<Spinner/>]
-    }
-
-    function showContent(){
-        if (opponentName) {
-            return <Game/>
-        } else {
-            return <FindOpponentButton
-                    stateArgs={stateArgs} 
-                    error={error}/>
-        }
-    }
     useEffect(() => {    
         setUserId(window.localStorage.getItem('currentUser'))
     },[])
 
+    function showContent(){ //showView or make view = component, put view in big return
+        if (match.connected) {
+            return <Game/>
+        } else {
+            return findOpponentButton
+        }
+    } //modal, view landing or page for name choosing???
+
+    const findOpponentButton = <FindOpponentButton
+        userId={userId}
+        connectToMatch={connectToMatch}
+        stateControl={stateControl} 
+        error={error}/>
+
     if (loading) {
         return displaySpinner()
     }
+
     return  <div
                 style={{height:'100%'}} 
                 onClick={()=>setLeaderBoard(false)}>
                 <Header
                     userId={userId}
                     leaderBoard={leaderBoard}
-                    setLeaderBoard={setLeaderBoard}
-                    setCurrentUser={setCurrentUser}/>
-                {showContent(opponentName,false)}
+                    setLeaderBoard={setLeaderBoard}/>
+                {showContent()}
                 <NameInput setCurrentUser={setCurrentUser}/>
             </div>
+}
+
+function displaySpinner(){
+    return [<Header/>,<Spinner/>]
+}
+
+function setCurrentUser(name){
+    window.localStorage.setItem('currentUser', name)
+    setUserId(name)
+}
+
+function connectToMatch(state, match) {
+    const webSocket = new WebSocket('ws://'+window.location.host+'/ws/'+match+'/')
+    webSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data)
+        console.log(data)
+    }
+    webSocket.onclose = function(e) {
+        console.error('socket closed.')
+    }
 }

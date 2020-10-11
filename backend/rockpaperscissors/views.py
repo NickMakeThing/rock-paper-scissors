@@ -18,13 +18,14 @@ class CreatePlayerView(CreateAPIView):
     serializer_class = PlayerSerializer
     
     def create(self, request, *args, **kwargs):
+        name = request.data['name']
         random_string = create_random_string()
-        cookie = create_cookie(request.data['name'] + random_string)
+        cookie = create_cookie(name + random_string)
         request.data['cookie']=cookie
         response = super().create(request)
         response.set_cookie(
             request.data['name'], cookie,
             max_age=31536000000, httponly=True
         )
-        response.set_cookie('names',names,max_age=31536000000)
+        response.set_cookie(name,cookie,max_age=31536000000)
         return response

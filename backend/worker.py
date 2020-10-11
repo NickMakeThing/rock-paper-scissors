@@ -1,7 +1,13 @@
+import os
 from time import sleep 
-from .models import PlayerStatus, PlayerMatch
-from match_maker_utils import make_matches
-from game import run_game
+from django import setup
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
+setup()
+
+
+from rockpaperscissors.models import PlayerStatus, PlayerMatch
+from rockpaperscissors.match_maker import make_matches
+from rockpaperscissors.game import run_game
 
 while(True):
     sleep(2) #atomic transaction on waiting and active?
