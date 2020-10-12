@@ -19,7 +19,7 @@ class PlayerStatus(models.Model):
         return '%s' % (self.name)
 
 class Match(models.Model): 
-    name = models.CharField(max_length=25)
+    name = models.CharField(max_length=32)
 
 class PlayerMatch(models.Model):
     player = models.ForeignKey(PlayerStatus, on_delete=models.CASCADE)

@@ -21,6 +21,7 @@ def create_matches(matches):
             player1 = i[0]; player2 = i[1]
             hash_input = random_string + player1.name + player2.name
             match_name = create_match_name(hash_input)
+            print(match_name)
             match_object = Match.objects.create(name=match_name)
             for j in [player1,player2]: #could make its own function
                 PlayerMatch.objects.create(player=j,match=match_object)

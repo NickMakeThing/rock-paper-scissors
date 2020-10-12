@@ -8,7 +8,7 @@ import threading
 
 def look_for_match(player, self_instance):
     while(player.looking_for_opponent and self_instance.connected):
-        print('still running')
+        print('still running: ',player.name)
         player_match = PlayerMatch.objects.filter(player=player.id)
         if player_match.exists():
             player.looking_for_opponent = False
@@ -16,7 +16,7 @@ def look_for_match(player, self_instance):
             opponent = PlayerMatch.objects.filter(match=match).exclude(player=player).first() #could give 'opponent' field in playermatch
             opponent = opponent.player.name # way too many queries
             self_instance.send(text_data=json.dumps({
-                "match_name": player_match.name,
+                "match_name": match.name,
                 "opponent": opponent
             }))
         sleep(2)
@@ -50,11 +50,11 @@ class MatchFindingConsumer(WebsocketConsumer):
             self.player.save()
 
 class GameUpdateConsumer(WebsocketConsumer):
-
     def connect(self):
-        self.match = self.scope['path'][10:]# [10:-1] if leading /, also can split by / get last.
-        contestants = PlayerMatch.objects.filter(name=self.match)
-        name=self.scope['cookies'].keys()[0] #change because error will happen when other cookies are present.
+        self.match = self.scope['path'].split('/')[3]
+        match = Match.objects.get(name=self.match)
+        contestants = PlayerMatch.objects.filter(match=match)
+        name=[*self.scope['cookies']][0]#change because error will happen when other cookies are present.
         player = PlayerStatus.objects.get(name=name) #too many queries.
         if contestants.exists():
             #check if playermatch has match
@@ -64,10 +64,6 @@ class GameUpdateConsumer(WebsocketConsumer):
                 self.channel_name
             )
             self.accept() 
-
-            
-            opponent = contestants.exclude(player=player).first() #too many queries.
-            self.send(text_data=json.dumps(oppnent.player.name)) #too many queries.
             print('match found')
         else: 
             print('no match found')

@@ -8,7 +8,7 @@ application = ProtocolTypeRouter({
     'websocket': SessionMiddlewareStack(
         URLRouter([
             re_path(r'ws/find_match/$', consumers.MatchFindingConsumer),
-            re_path(r'ws/match/(?P<match>\w+)/$', consumers.GameUpdateConsumer),
+            re_path(r'ws/match/(?P<Match>\w+)/$', consumers.GameUpdateConsumer),
         ])
     ),
 })
