@@ -22,24 +22,24 @@ export default function App(){
     useEffect(() => {    
         setUserId(window.localStorage.getItem('currentUser'))
     },[])
-
-    function showContent(){ //showView or make view = component, put view in big return
-        if (match.connected) {
-            return <Game/>
-        } else {
-            return findOpponentButton
-        }
-    } //modal, view landing or page for name choosing???
-
+    
+    const game = <Game
+        userId={userId} 
+        opponentName={opponentName}/>
     const findOpponentButton = <FindOpponentButton
         userId={userId}
-        connectToMatch={connectToMatch}
         stateControl={stateControl} 
         error={error}/>
 
-    if (loading) {
+    if (loading) { //do we put all this in a function? if yes, then many arguments: (loading,match,game,findOpponent)
         return displaySpinner()
-    }
+    } else {
+        if (match.connected) {
+            var view = game
+        } else {
+            var view = findOpponentButton
+        }
+    }  //modal, view landing or page for name choosing???
 
     return  <div
                 style={{height:'100%'}} 
@@ -48,7 +48,7 @@ export default function App(){
                     userId={userId}
                     leaderBoard={leaderBoard}
                     setLeaderBoard={setLeaderBoard}/>
-                {showContent()}
+                {view /*can become its own component?*/}
                 <NameInput setCurrentUser={setCurrentUser}/>
             </div>
 }
@@ -60,15 +60,4 @@ function displaySpinner(){
 function setCurrentUser(name){
     window.localStorage.setItem('currentUser', name)
     setUserId(name)
-}
-
-function connectToMatch(state, match) {
-    const webSocket = new WebSocket('ws://'+window.location.host+'/ws/'+match+'/')
-    webSocket.onmessage = function(e) {
-        const data = JSON.parse(e.data)
-        console.log(data)
-    }
-    webSocket.onclose = function(e) {
-        console.error('socket closed.')
-    }
 }

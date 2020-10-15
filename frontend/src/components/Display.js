@@ -1,19 +1,19 @@
 import React from 'react'
 
-export default function Display(){
+export default function Display(props){
     return (
         <>    
             <span style={roundNumberStyle}>round 5/5</span>
             <div style={{whiteSpace: 'nowrap', margin:'50px', marginTop:'0px'}}>
-                <div style={userBoxStyle}>user</div>
-                <div style={middleBoxContainerStyle}>
-                    <div style={middleBoxStyle}>w/l</div><br/>
-                    <div style={middleBoxStyle}>w/l</div>
-                    <div style={middleBoxStyle}>w/l</div>
-                    <div style={middleBoxStyle}>w/l</div>
-                    <div style={middleBoxStyle}>w/l</div>
-                </div>
-                <div style={opponentBoxStyle}>opponent</div>
+            <div style={userBoxStyle}>{props.userId}</div>
+            <div style={middleBoxContainerStyle}>
+                <div style={middleBoxStyle}>w/l</div><br/>
+                <div style={middleBoxStyle}>w/l</div>
+                <div style={middleBoxStyle}>w/l</div>
+                <div style={middleBoxStyle}>w/l</div>
+                <div style={middleBoxStyle}>w/l</div>
+            </div>
+             <div style={opponentBoxStyle}>{props.opponentName}</div>
             </div>
         </>
     )

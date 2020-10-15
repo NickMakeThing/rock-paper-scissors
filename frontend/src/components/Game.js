@@ -3,7 +3,7 @@ import Choices from './Choices.js'
 import Display from './Display.js'
 
 
-export default function Game(){
+export default function Game(props){
     const [chosen, setChosen] = useState(null)
     const choiceClick = e => {
         setChosen(e.target.innerText)
@@ -11,7 +11,9 @@ export default function Game(){
     
     return (
         <>
-            <Display/>
+            <Display 
+                userId={props.userId}
+                opponentName={props.opponentName}/>
             <Choices
                 chosen={chosen}
                 choiceClick={choiceClick}/>
