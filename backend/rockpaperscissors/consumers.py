@@ -51,16 +51,15 @@ class MatchFindingConsumer(WebsocketConsumer):
 
 class GameUpdateConsumer(WebsocketConsumer):
     def connect(self):
-        self.match = self.scope['path'].split('/')[3]
-        match = Match.objects.get(name=self.match)
-        contestants = PlayerMatch.objects.filter(match=match)
+        match = self.scope['path'].split('/')[3]
+        self.match_object = Match.objects.get(name=match)
+        contestants = PlayerMatch.objects.filter(match=self.match_object)
         name=[*self.scope['cookies']][0]#change because error will happen when other cookies are present.
-        player = PlayerStatus.objects.get(name=name) #too many queries.
-        if contestants.exists():
-            #check if playermatch has match
-            #check cookie?
+        self.cookie = self.scope['cookies'][name]
+        self.player = PlayerStatus.objects.get(name=name) #too many queries.
+        if contestants.exists() and self.player.cookie == self.cookie:
             async_to_sync(self.channel_layer.group_add)(
-                self.match,
+                match,
                 self.channel_name
             )
             self.accept() 
@@ -69,13 +68,14 @@ class GameUpdateConsumer(WebsocketConsumer):
             print('no match found')
 
     def receive(self, text_data):
-        data = json.loads(text_data)
-        player = PlayerStatus.objects.get(name='greg')# can be redundant if client sends their user id number instaed
-        player_match = PlayerMatch.objects.get(player=player)# do this with less queries
-        
-        if player.cookie == data['cookie'] and player_match.match.name == self.match: #too many queries     
+        data=json.loads(text_data)
+        print(data)
+        player_match = PlayerMatch.objects.get(player=self.player)# do this with less queries  
+        if player_match.match == self.match_object:    
             form = MoveForm({'move':data['move']})
+            print('match name validated')
             if form.is_valid():
+                print('message validated')
                 player_match.move = data['move']
                 player_match.save()
                 
@@ -83,7 +83,7 @@ class GameUpdateConsumer(WebsocketConsumer):
         #get user and move
         #add users move to database
         #
-        pass
+        
     
     def game_update(self, update):
         self.send(text_data=json.dumps(update))

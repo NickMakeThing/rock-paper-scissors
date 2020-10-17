@@ -7,16 +7,20 @@ export default function Display(props){
             <div style={{whiteSpace: 'nowrap', margin:'50px', marginTop:'0px'}}>
             <div style={userBoxStyle}>{props.userId}</div>
             <div style={middleBoxContainerStyle}>
-                <div style={middleBoxStyle}>w/l</div><br/>
-                <div style={middleBoxStyle}>w/l</div>
-                <div style={middleBoxStyle}>w/l</div>
-                <div style={middleBoxStyle}>w/l</div>
-                <div style={middleBoxStyle}>w/l</div>
+                {displayScore(props.score)}
             </div>
              <div style={opponentBoxStyle}>{props.opponentName}</div>
             </div>
         </>
     )
+}
+
+function displayScore(score){
+    score = score.map(result =>{
+            return <div style={middleBoxStyle}>{result}</div>
+    })
+    score[0] = [score[0],<br/>]
+    return score
 }
 
 const userBoxStyle = {

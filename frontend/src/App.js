@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Header from './components/Header'
 import Game from './components/Game'
 import LeaderBoard from './components/LeaderBoard'
@@ -17,15 +17,27 @@ export default function App(){
     const [userId, setUserId] = useState(null)
     const [error, setError] = useState(null)
     const [match, setMatch] = useState({name:null, connected:false})
+    const [webSocket, setWebSocket] = useState({})
     const stateControl = {setMatch, setOpponentName, setLoading, setError}
-
+    
     useEffect(() => {    
         setUserId(window.localStorage.getItem('currentUser'))
     },[])
     
+    useEffect(() => {    
+        if(match.name && !match.connected){
+            setWebSocket(connectToMatch(match,setMatch))
+        }
+        if(match.connected){
+            setLoading(false)
+        }
+    },[match])
+
     const game = <Game
         userId={userId} 
+        webSocket={webSocket}
         opponentName={opponentName}/>
+        
     const findOpponentButton = <FindOpponentButton
         userId={userId}
         stateControl={stateControl} 
@@ -37,7 +49,7 @@ export default function App(){
         if (match.connected) {
             var view = game
         } else {
-            var view = findOpponentButton
+            var view = [findOpponentButton,<NameInput setCurrentUser={setCurrentUser}/>]
         }
     }  //modal, view landing or page for name choosing???
 
@@ -49,7 +61,7 @@ export default function App(){
                     leaderBoard={leaderBoard}
                     setLeaderBoard={setLeaderBoard}/>
                 {view /*can become its own component?*/}
-                <NameInput setCurrentUser={setCurrentUser}/>
+                
             </div>
 }
 
@@ -59,5 +71,23 @@ function displaySpinner(){
 
 function setCurrentUser(name){
     window.localStorage.setItem('currentUser', name)
-    setUserId(name)
+    setUserId(name) //doesnt work because outside of component
+}
+
+function connectToMatch(match,setMatch) {
+    const webSocket = new WebSocket('ws://'+window.location.host+'/ws/match/'+match.name+'/')
+    
+    webSocket.onopen = function(e) {
+        console.log('connected to match')
+        setMatch({name:match.name,connected:true})
+    }
+    webSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data)
+        console.log(data)
+    }
+    webSocket.onclose = function(e) {
+        console.error('socket closed.')
+        setMatch({name:'',connected:false})
+    }
+    return webSocket
 }

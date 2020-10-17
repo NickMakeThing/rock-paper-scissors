@@ -1,5 +1,4 @@
 import React from 'react'
-
 export default function FindOpponentButton(props){
     return (
         <div 
@@ -37,11 +36,11 @@ function findOpponent(state,userId) {
         webSocket.close()
         console.log(data.match_name)
         state.setOpponentName(data.opponent)
-        
-        connectToMatch(state,data.match_name)
+        state.setMatch({name:data.match_name,connected:false})
     }
     webSocket.onclose = function(e) {
-        console.error('socket closed: match finding complete or interrupted.')
+        //todo: if not successfully retrieved match name, setloading(false)
+        console.error('socket closed: match finding complete or a.')
     }
     setTimeout(() => {
         console.log('userId sent')
@@ -49,20 +48,3 @@ function findOpponent(state,userId) {
     }, 1000)
 }
 
-function connectToMatch(state,match) {
-    const webSocket = new WebSocket('ws://'+window.location.host+'/ws/match/'+match+'/')
-    
-    webSocket.onopen = function(e) {
-        state.setMatch({name:match,connected:true})
-        state.setLoading(false)
-        console.log('connected to match')
-    }
-    webSocket.onmessage = function(e) {
-        const data = JSON.parse(e.data)
-        console.log(data)
-    }
-    webSocket.onclose = function(e) {
-        console.error('socket closed.')
-        state.setMatch({name:'',connected:false})
-    }
-}
