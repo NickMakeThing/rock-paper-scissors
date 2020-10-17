@@ -32,16 +32,17 @@ export default function App(){
             setLoading(false)
         }
     },[match])
-
-    const game = <Game
-        userId={userId} 
-        webSocket={webSocket}
-        opponentName={opponentName}/>
         
     const findOpponentButton = <FindOpponentButton
         userId={userId}
         stateControl={stateControl} 
         error={error}/>
+
+    const game = <Game
+        findOpponentButton={findOpponentButton}
+        userId={userId} 
+        webSocket={webSocket}
+        opponentName={opponentName}/>
 
     if (loading) { //do we put all this in a function? if yes, then many arguments: (loading,match,game,findOpponent)
         return displaySpinner()

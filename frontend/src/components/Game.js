@@ -24,6 +24,16 @@ export default function Game(props){
     }
     props.webSocket.onmessage = e => onReceive(e)
 
+    function displayButtonOrResult(score){
+        if(score.filter(x => x=='loss').length == 3){
+            return ['you have lost', props.findOpponentButton]
+        } 
+        if(score.filter(x => x=='win').length == 3){
+            return ['you have won', props.findOpponentButton]
+        } 
+        return <button onClick={()=>sendMove(chosen)}>Select</button>
+    }
+
     function sendMove(move){
         //in game.py pass pass doesnt result in a round and moves stay put in db
         //not a big problem, should be adjusted
@@ -32,7 +42,6 @@ export default function Game(props){
             setChosen(null)
         }    
     }
-
     return (
         <>
             <Display 
@@ -42,7 +51,7 @@ export default function Game(props){
             <Choices
                 chosen={chosen}
                 choiceClick={choiceClick}/>
-            <button onClick={()=>sendMove(chosen)}>Select</button>
+            {displayButtonOrResult(score)}
         </>
     )
 }
