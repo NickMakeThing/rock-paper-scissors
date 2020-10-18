@@ -12,7 +12,8 @@ export default function Header(props){
                             {props.userId}
                         </span> 
                     </div>
-                    score:{100} 
+                    {/* open in dropdown behind name or something */}
+                    score:{100} wins:{123} losses{123} 
                 </div>
                 <div style={rightSideStyle}>
                     <LeaderBoard

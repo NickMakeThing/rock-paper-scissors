@@ -2,8 +2,8 @@ from django.shortcuts import render
 from .models import PlayerStatus
 from django.db import transaction
 from django.views.generic import TemplateView
-from rest_framework.generics import CreateAPIView, UpdateAPIView
-from .serializers import PlayerSerializer
+from rest_framework.generics import CreateAPIView, UpdateAPIView, ListAPIView
+from .serializers import PlayerSerializer, PlayerDataSerializer
 from .match_maker import create_random_string, create_match_name as create_cookie
 
 class Index(TemplateView):
@@ -28,4 +28,12 @@ class CreatePlayerView(CreateAPIView):
             max_age=31536000000, httponly=True
         )
         response.set_cookie(name,cookie,max_age=31536000000)
+        return response
+
+class SendPlayerDataView(ListAPIView):
+    serializer_class = PlayerDataSerializer
+    queryset = PlayerStatus.objects.all().order_by('-score')
+    def list(self, request, *args, **kwargs):
+        response = super().list(request)
+        print('RESPONSE:',response.data)
         return response

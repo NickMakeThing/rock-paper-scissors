@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import Header from './components/Header'
 import Game from './components/Game'
 import LeaderBoard from './components/LeaderBoard'
