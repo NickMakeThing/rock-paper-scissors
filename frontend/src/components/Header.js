@@ -3,35 +3,39 @@ import LeaderBoard from './LeaderBoard'
 import Cookie from 'js-cookie'
 
 export default function Header(props){
+    const score = props.userData.score
+    const wins = props.userData.wins
+    const losses = props.userData.losses
     return (
-        <header style={{padding:'10px'}}>
-            <h2 style={{margin:0}}>
-                <div style={leftSideStyle}>
+        <header style={rootStyle}>
+                <h2 style={leftSideStyle}>
                     <div style={{display:'inline-block', marginRight: '10px'}}>
                         <span>
                             {props.userId}
                         </span> 
                     </div>
                     {/* open in dropdown behind name or something */}
-                    score:{100} wins:{123} losses{123} 
-                </div>
-                <div style={rightSideStyle}>
+                    score:{score} wins:{wins} losses:{losses} 
+                </h2>
+                <h2 style={rightSideStyle}>
                     <LeaderBoard
                         leaderBoard={props.leaderBoard}
                         setLeaderBoard={props.setLeaderBoard}/>
-                </div>
-            </h2>
+                </h2>
         </header>
     )
 }
-
+const rootStyle = {
+    display:'grid',
+    gridTemplateColumns: '50% 50%',
+}
 const leftSideStyle = {
     display:'inline-block',
-    width:'50%',
-    textAlign:'left'
+    textAlign:'left',
+    paddingLeft: '50px'
 }
 const rightSideStyle = {
     display:'inline-block',
-    width:'50%',
-    textAlign:'right'
+    textAlign:'right',
+    paddingRight: '50px'
 }

@@ -15,6 +15,7 @@ export default function App(){
     const [loading, setLoading] = useState(false)
     const [leaderBoard,setLeaderBoard] = useState(false)
     const [userId, setUserId] = useState(null)
+    const [userStats, setUserStats] = useState({})
     const [error, setError] = useState(null)
     const [match, setMatch] = useState({name:null, connected:false})
     const [webSocket, setWebSocket] = useState({})
@@ -23,7 +24,13 @@ export default function App(){
     useEffect(() => {    
         setUserId(window.localStorage.getItem('currentUser'))
     },[])
-    
+
+    useEffect(() => {   
+        if(userId){
+            getUserStats(setUserStats,userId)
+        }
+    },[userId])
+
     useEffect(() => {    
         if(match.name && !match.connected){
             setWebSocket(connectToMatch(match,setMatch))
@@ -32,7 +39,7 @@ export default function App(){
             setLoading(false)
         }
     },[match])
-        
+
     const findOpponentButton = <FindOpponentButton
         userId={userId}
         stateControl={stateControl} 
@@ -45,7 +52,7 @@ export default function App(){
         opponentName={opponentName}/>
 
     if (loading) { //do we put all this in a function? if yes, then many arguments: (loading,match,game,findOpponent)
-        return displaySpinner()
+        var view = <Spinner/>
     } else {
         if (match.connected) {
             var view = game
@@ -55,19 +62,15 @@ export default function App(){
     }  //modal, view landing or page for name choosing???
 
     return  <div
-                style={{height:'100%'}} 
+                style={{height:'100%'}}
                 onClick={()=>setLeaderBoard(false)}>
                 <Header
                     userId={userId}
+                    userData={userStats}
                     leaderBoard={leaderBoard}
                     setLeaderBoard={setLeaderBoard}/>
                 {view /*can become its own component?*/}
-                
             </div>
-}
-
-function displaySpinner(){
-    return [<Header/>,<Spinner/>]
 }
 
 function setCurrentUser(name){
@@ -91,4 +94,10 @@ function connectToMatch(match,setMatch) {
         setMatch({name:'',connected:false})
     }
     return webSocket
+}
+
+function getUserStats(setState,userId){
+    fetch('http://localhost:8000/player/'+userId+'/')
+        .then(response => response.json())
+        .then(data => setState(data))//????
 }

@@ -25,16 +25,10 @@ export default function LeaderBoard(props){
     )
 }
 
-function getPlayerData(callback){
-    // var xhr = new XMLHttpRequest()
-    // xhr.open("GET", "http://localhost:8000/ranks/");
-    // xhr.onload = () => {
-    //     console.log(xhr.response)
-    // }
-    // xhr.send();
+function getPlayerData(setState){
     fetch('http://localhost:8000/ranks/')
         .then(response => response.json())
-        .then(data => callback(data))//????
+        .then(data => setState(data))//????
 }
 
 function showLeaderBoardModal(state){
