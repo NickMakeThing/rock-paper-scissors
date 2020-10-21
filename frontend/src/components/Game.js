@@ -1,11 +1,30 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Choices from './Choices.js'
 import Display from './Display.js'
 
 export default function Game(props){
     const [chosen, setChosen] = useState(null)
     const [score, setScore] = useState([])
-    const round = score.length
+    const [gameScale, setGameScale] = useState('1.5')
+
+    useEffect(() => {    
+        var handleResize = () => {
+            let newState = String(getGameScale())
+            setGameScale(newState)
+        }
+        window.addEventListener('resize', handleResize) //this
+        return () => {
+            window.removeEventListener('resize', handleResize) //this
+        }
+    },[window.outerHeight,window.outerWidth])//only works when rerender is triggered,
+    //get rerender to be triggered by window resize
+    //adding these two '//this' makes it rerender on resize
+    const gameStyle = {
+        position:'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translateX(-50%) translateY(-50%) scale('+gameScale+') '
+    }
 
     const choiceClick = e => {
         setChosen(e.target.innerText)
@@ -42,8 +61,9 @@ export default function Game(props){
             setChosen(null)
         }    
     }
+
     return (
-        <>
+        <div style={gameStyle}>
             <Display 
                 score={score}
                 userId={props.userId}
@@ -52,7 +72,18 @@ export default function Game(props){
                 chosen={chosen}
                 choiceClick={choiceClick}/>
             {displayButtonOrResult(score)}
-        </>
+        </div>
     )
+}
+function getGameScale(){
+    var scaleWidth = 1.5
+    var scaleHeight = 1.5
+    if(screen.width>window.outerWidth){
+        scaleWidth = (window.outerWidth/screen.width)*1.5
+    }
+    if(screen.height>window.outerHeight){
+        scaleHeight = (window.outerHeight/screen.height)*1.5
+    }
+    return Math.min(scaleWidth,scaleHeight)
 }
 

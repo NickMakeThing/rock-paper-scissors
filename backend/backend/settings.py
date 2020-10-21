@@ -19,7 +19,7 @@ SECRET_KEY = 'ybtlq6zgg7if%13yj19pu7qp^xnx1fp+54*d8-)44yjz3%y^4@'
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost','192.168.0.16']
 
 INSTALLED_APPS = [
     'rest_framework',

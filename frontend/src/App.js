@@ -14,6 +14,7 @@ export default function App(){
     const [opponentName, setOpponentName] = useState(null) 
     const [loading, setLoading] = useState(false)
     const [leaderBoard,setLeaderBoard] = useState(false)
+    const [dropDown, setDropDown] = useState(false)
     const [userId, setUserId] = useState(null)
     const [userStats, setUserStats] = useState({})
     const [error, setError] = useState(null)
@@ -61,16 +62,24 @@ export default function App(){
         }
     }  //modal, view landing or page for name choosing???
 
+    const setters = {setLeaderBoard, setDropDown}
     return  <div
                 style={{height:'100%'}}
-                onClick={()=>setLeaderBoard(false)}>
+                onClick={()=>clearScreen(setters)}>
                 <Header
                     userId={userId}
                     userData={userStats}
+                    dropDown={dropDown}
                     leaderBoard={leaderBoard}
+                    setDropDown={setDropDown}
                     setLeaderBoard={setLeaderBoard}/>
                 {view /*can become its own component?*/}
             </div>
+}
+
+function clearScreen(setters){
+    setters.setLeaderBoard(false)
+    setters.setDropDown(false)
 }
 
 function setCurrentUser(name){
@@ -101,3 +110,4 @@ function getUserStats(setState,userId){
         .then(response => response.json())
         .then(data => setState(data))//????
 }
+

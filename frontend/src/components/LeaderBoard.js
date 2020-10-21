@@ -2,23 +2,26 @@ import React, { useState, useEffect } from 'react'
 
 export default function LeaderBoard(props){
     const [playerData, setPlayerData] = useState([])
-    var state = {
-        playerData: playerData, 
-        leaderBoard: props.leaderBoard
-    }
-
     useEffect(() => {    
         if(props.leaderBoard){
             getPlayerData(setPlayerData)
         }
     },[props.leaderBoard])
 
+    function toggleLeaderBoard(e){
+        e.stopPropagation()
+        props.setLeaderBoard(!props.leaderBoard)
+    }
+    const state = {
+        playerData: playerData, 
+        leaderBoard: props.leaderBoard
+    }
     return (
         <>
             <span 
                 style={{cursor: 'pointer'}}
-                onClick={e=>{e.stopPropagation();props.setLeaderBoard(true)}}>
-                leaderboard
+                onClick={toggleLeaderBoard}>
+                Leaderboard
             </span>
             {showLeaderBoardModal(state)}
         </>
@@ -70,10 +73,11 @@ function showLeaderBoardModal(state){
 }
 
 const modalStyle = {
-    fontSize: '75%',
-    textAlign: 'left',
+    fontSize:'75%',
+    textAlign:'left',
     position:'absolute',
     height:'600px',
+    lineHeight:'normal',
     width:'450px',
     padding:'10px',
     backgroundColor: 'white',
