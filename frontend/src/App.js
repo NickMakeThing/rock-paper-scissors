@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react'
 import Header from './components/Header'
 import Game from './components/Game'
 import LeaderBoard from './components/LeaderBoard'
-import Spinner from './components/Spinner'
 import FindOpponentButton from './components/FindOpponentButton'
 import NameInput from './components/NameInput'
+import View from './components/View'
 import Cookie from 'js-cookie'
 //where to put css?
 //sass/styled components
@@ -47,20 +47,10 @@ export default function App(){
         error={error}/>
 
     const game = <Game
-        findOpponentButton={findOpponentButton}
-        userId={userId} 
-        webSocket={webSocket}
-        opponentName={opponentName}/>
-
-    if (loading) { //do we put all this in a function? if yes, then many arguments: (loading,match,game,findOpponent)
-        var view = <Spinner/>
-    } else {
-        if (match.connected) {
-            var view = game
-        } else {
-            var view = [findOpponentButton,<NameInput setCurrentUser={setCurrentUser}/>]
-        }
-    }  //modal, view landing or page for name choosing???
+            findOpponentButton={findOpponentButton}
+            userId={userId} 
+            webSocket={webSocket}
+            opponentName={opponentName}/>
 
     const setters = {setLeaderBoard, setDropDown}
     return  <div
@@ -73,7 +63,13 @@ export default function App(){
                     leaderBoard={leaderBoard}
                     setDropDown={setDropDown}
                     setLeaderBoard={setLeaderBoard}/>
-                {view /*can become its own component?*/}
+                <View
+                    game={game}
+                    match={match}
+                    loading={loading}
+                    userStats={userStats}
+                    findOpponentButton={findOpponentButton}/>
+                {/* <NameInput setCurrentUser={setCurrentUser}/> */}
             </div>
 }
 
@@ -110,4 +106,3 @@ function getUserStats(setState,userId){
         .then(response => response.json())
         .then(data => setState(data))//????
 }
-

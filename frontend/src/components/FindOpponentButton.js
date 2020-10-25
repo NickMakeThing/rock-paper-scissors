@@ -1,27 +1,19 @@
 import React from 'react'
 export default function FindOpponentButton(props){
     return (
-        <div 
-            style={buttonStyle} >
+        <div>
             <span 
                 style={{color:'red'}}>
                 {props.error}
             </span><br/>
-            <button 
+            <button style={buttonStyle}
                 onClick={()=>findOpponent(props.stateControl,props.userId)}>
-                Find Opponent
+                Play Now
             </button>
         </div>
     )
 }
 
-const buttonStyle={
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translateX(-50%) translateY(-75%)'
-}
-  
 
 //stateControl = {setOpponentName, setLoading, setError}
 function findOpponent(state,userId) {
@@ -48,3 +40,8 @@ function findOpponent(state,userId) {
     }, 1000)
 }
 
+const buttonStyle={
+    fontSize:'150%',
+    width:300,
+    height:100
+}

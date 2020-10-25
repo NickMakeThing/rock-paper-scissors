@@ -43,26 +43,27 @@ def send_to_channel_layer(winner,loser,rating_change=None):
         'message':{ #
             'winner':{
                 'name': winner.player.name,
-                'game_score': winner.game_score
+                'game_score': winner.game_score,
+                'move': winner.move
             },
             'loser':{
                 'name': loser.player.name, #queries?
-                'game_score': loser.game_score
+                'game_score': loser.game_score,
+                'move': loser.move
             },
             'game_finished': rating_change
         }
     })  
 
 def complete_round(winner,loser):
+    winner.game_score += 1
+    send_to_channel_layer(winner,loser)
+    winner.move = None
+    winner.save()
     loser.move = None
     loser.save()
-    winner.move = None
-    winner.game_score += 1
-    winner.save()
-    send_to_channel_layer(winner,loser)
 
 def complete_game(winner,loser):
-    
     player_status_winner = winner.player
     player_status_loser = loser.player
     score_change_value = get_score_change(
@@ -91,12 +92,6 @@ def game_round(player1, player2):
             complete_round(winner,loser)  
         else:
             complete_game(winner,loser)
-
-        """
-        if winner == player1:
-            loser = player2
-        else:
-            loser = player1"""
             
 def run_game(players):
     if len(players) >= 2 and len(players) % 2 == 0:

@@ -2,16 +2,13 @@ import React, { useState, useEffect } from 'react'
 
 export default function LeaderBoard(props){
     const [playerData, setPlayerData] = useState([])
+    
     useEffect(() => {    
         if(props.leaderBoard){
             getPlayerData(setPlayerData)
         }
     },[props.leaderBoard])
 
-    function toggleLeaderBoard(e){
-        e.stopPropagation()
-        props.setLeaderBoard(!props.leaderBoard)
-    }
     const state = {
         playerData: playerData, 
         leaderBoard: props.leaderBoard
@@ -20,7 +17,7 @@ export default function LeaderBoard(props){
         <>
             <span 
                 style={{cursor: 'pointer'}}
-                onClick={toggleLeaderBoard}>
+                onClick={e=>toggleLeaderBoard(e,props)}>
                 Leaderboard
             </span>
             {showLeaderBoardModal(state)}
@@ -32,6 +29,11 @@ function getPlayerData(setState){
     fetch('http://localhost:8000/ranks/')
         .then(response => response.json())
         .then(data => setState(data))//????
+}
+
+function toggleLeaderBoard(e,props){
+    e.stopPropagation()
+    props.setLeaderBoard(!props.leaderBoard)
 }
 
 function showLeaderBoardModal(state){
@@ -87,3 +89,4 @@ const modalStyle = {
     transform: 'translateX(-50%) translateY(-65%)',
     zIndex:'1'
 }
+

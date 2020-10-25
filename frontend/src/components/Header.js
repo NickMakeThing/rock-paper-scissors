@@ -14,10 +14,10 @@ export default function Header(props){
     return (
         <header style={rootStyle}>
                 <h2 style={leftSideStyle}>
-                    <div style={{cursor:'pointer'}} 
+                    <div style={userIdContainer} 
                         onClick={toggleDropDown}>
                         <span style={profileIconStyle}/>
-                        <span style={{position:'relative', marginLeft:0, top:-13 }}> {/* needs work */}
+                        <span style={{marginLeft:10}}> {/* needs work */}
                             {props.userId}
                         </span> 
                     </div>
@@ -52,26 +52,18 @@ function showOrHideDropDown(dropDown){
     }
 }
 const rootStyle = {
-    display:'grid',
-    gridTemplateColumns: '50% 50%',
-    fontSize:'150%'
+    display:'flex',
+    alignItems:'center',
+    justifyContent:'space-between',
+    height:70
 }
 const leftSideStyle = {   
     display:'inline-block',
-    height:'50px',
-    marginTop:'10px',
-    marginBottom:'10px',
-    textAlign:'left',
-    paddingLeft: '50px'
+    marginLeft:25
 }
 const rightSideStyle = {    
     display:'inline-block',
-    height:'50px',
-    marginTop:'10px',
-    marginBottom:'10px',
-    lineHeight:'50px',
-    textAlign:'right',
-    paddingRight: '50px'
+    marginRight:25
 }
 const profileIconStyle = {
     display:'inline-block',
@@ -79,6 +71,12 @@ const profileIconStyle = {
     width:'50px',
     borderRadius:'50px',
     backgroundColor:'white'
+}
+const userIdContainer = {
+    display:'flex',
+    cursor:'pointer',
+    alignItems:'center',
+    
 }
 //define function and style here, in function add/modify style eg dropDownStyle['display'] = 'block'
 //then call function and put style as arg in component. this gives 'strict mode does not allow' error
