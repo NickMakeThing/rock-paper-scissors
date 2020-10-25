@@ -1,7 +1,7 @@
 import React from 'react'
 export default function FindOpponentButton(props){
     return (
-        <div>
+        <span>
             <span 
                 style={{color:'red'}}>
                 {props.error}
@@ -10,7 +10,7 @@ export default function FindOpponentButton(props){
                 onClick={()=>findOpponent(props.stateControl,props.userId)}>
                 Play Now
             </button>
-        </div>
+        </span>
     )
 }
 
@@ -42,6 +42,7 @@ function findOpponent(state,userId) {
 
 const buttonStyle={
     fontSize:'150%',
+    marginTop:20,
     width:300,
     height:100
 }
