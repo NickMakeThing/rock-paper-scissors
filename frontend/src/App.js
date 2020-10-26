@@ -41,20 +41,33 @@ export default function App(){
         }
     },[match])
 
+    function updateUserStats(ratingChange,result){
+        var userStatsCopy={...userStats}
+        userStatsCopy.score += ratingChange
+        if(result=='win'){
+            userStatsCopy.wins+=1
+        } else {
+            userStatsCopy.losses+=1
+        }
+        setUserStats(userStatsCopy)
+        return userStatsCopy.score
+    }
+
     const findOpponentButton = <FindOpponentButton
         userId={userId}
         stateControl={stateControl} 
         error={error}/>
 
     const game = <Game
-            findOpponentButton={findOpponentButton}
-            userId={userId} 
-            webSocket={webSocket}
-            opponentName={opponentName}/>
+        userId={userId} 
+        webSocket={webSocket}
+        opponentName={opponentName}
+        updateUserStats={updateUserStats}
+        findOpponentButton={findOpponentButton}/>
 
     const setters = {setLeaderBoard, setDropDown}
     return  <div
-                style={{height:'100%'}}
+                style={mainContainerStyle}
                 onClick={()=>clearScreen(setters)}>
                 <Header
                     userId={userId}
@@ -105,4 +118,8 @@ function getUserStats(setState,userId){
     fetch('http://localhost:8000/player/'+userId+'/')
         .then(response => response.json())
         .then(data => setState(data))//????
+}
+
+const mainContainerStyle={
+    height:'100%'
 }

@@ -69,6 +69,7 @@ function showLeaderBoardModal(state){
         return <div 
             style={modalStyle}
             onClick={e=>e.stopPropagation()}>
+                <h3 style={{textAlign:'center'}}>Leaderboard</h3>
                 {arr}
         </div>
     }

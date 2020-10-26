@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import Choices from './Choices.js'
-import Display from './Display.js'
+import Choices from './Choices'
+import Display from './Display'
+import PlayAgainModal from './PlayAgainModal'
 
 export default function Game(props){
     const [chosen, setChosen] = useState(null)
     const [score, setScore] = useState([])
     const [gameScale, setGameScale] = useState('1')
     const [movesFromLastRound, setMovesFromLastRound] = useState(null)
+    const [endOfGameDetails, setEndOfGameDetails] = useState(null)
 
     useEffect(() => {    
         var handleResize = () => {
@@ -33,30 +35,41 @@ export default function Game(props){
     }
     
     props.webSocket.onmessage = e => {
-        const data = JSON.parse(e.data).message
-        console.log(data)
-        if(data.winner.name == props.userId){
-            var result = 'win'
+        const update = JSON.parse(e.data).message
+        if(update.draw){
+            var result = 'draw'
+            setMovesFromLastRound({
+                [props.userId]:update.move,
+                [props.opponentName]:update.move
+            })
         } else {
-            var result = 'loss'
+            if(update.winner.name == props.userId){
+                var result = 'win'
+            } else {
+                var result = 'loss'
+            }
+            setMovesFromLastRound({
+                [update.winner.name]:update.winner.move,
+                [update.loser.name]:update.loser.move
+            })
         }
-        var newScore = [...score,result]
-        setScore(newScore)
+
+        updateScore(score, setScore, result)
         setChosen(null)
-        setMovesFromLastRound({
-            [data.winner.name]:data.winner.move,
-            [data.loser.name]:data.loser.move
-        })
+        if(update.game_finished){
+            var ratingChange = update.game_finished
+            var newRating = endGame(result, ratingChange)
+            setEndOfGameDetails({rating:newRating, result:result})
+        }
     }
 
-    function displayButtonOrResult(score){
-        if(score.filter(x => x=='loss').length == 3){
-            return ['you have lost', props.findOpponentButton]
+    function endGame(result,ratingChange){
+        if(result=='loss'){
+            return props.updateUserStats(ratingChange*-1)
         } 
-        if(score.filter(x => x=='win').length == 3){
-            return ['you have won', props.findOpponentButton]
+        if(result == 'win'){
+            return props.updateUserStats(ratingChange)
         } 
-        return <button onClick={()=>sendMove(chosen)}>Select</button>
     }
     
     function sendMove(move){
@@ -66,6 +79,8 @@ export default function Game(props){
             props.webSocket.send(JSON.stringify({move:move[0]}))
         }    
     }
+
+    var endOfGameModal = showEndOfGame(endOfGameDetails,props)
 
     return (
         <div style={gameStyle}>
@@ -77,12 +92,44 @@ export default function Game(props){
             <Choices
                 chosen={chosen}
                 choiceClick={choiceClick}/>
-            {displayButtonOrResult(score)}
+            <button onClick={()=>sendMove(chosen)}>Select</button>
+            {endOfGameModal}
         </div>
     )
 }
 
-function getGameScale(){
+function showEndOfGame(endOfGameDetails,props){
+    if(endOfGameDetails){
+        if(endOfGameDetails.result == 'win'){
+            return <PlayAgainModal 
+                gameResult='won' 
+                newScore={endOfGameDetails.rating}
+                webSocket={props.webSocket}/>
+        } else {
+            return <PlayAgainModal 
+                gameResult='lost' 
+                newScore={endOfGameDetails.rating}
+                webSocket={props.webSocket}/>
+        }
+    }
+    return null
+}
+
+function updateScore(score,setScore,result){
+    var scoreCopy = [...score]
+    if(scoreCopy.slice(-1) == 'draw'){
+        if(result!='draw'){
+            scoreCopy.pop()
+            scoreCopy.push(result)
+            setScore(scoreCopy)
+        }
+    } else {
+        scoreCopy.push(result)
+        setScore(scoreCopy)
+    }
+}
+
+function getGameScale(){//change
     var scaleWidth = 1.5
     var scaleHeight = 1.5
     if(screen.width>window.outerWidth){

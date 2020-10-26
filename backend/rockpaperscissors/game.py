@@ -11,9 +11,9 @@ def decide_winner(player1,player2):
         'r_p': player2,
         'p_s': player2,
         's_r': player2,
-        'r_r': 'draw',
-        'p_p': 'draw',
-        's_s': 'draw',
+        'r_r': None,
+        'p_p': None,
+        's_s': None,
     }
     return CASES[player1.move+'_'+player2.move]
 
@@ -39,7 +39,7 @@ def send_to_channel_layer(winner,loser,rating_change=None):
     #from channels.layers import channel_layers
     #print(channel_layers['test_channel'])
     async_to_sync(channel_layer.group_send)(match.name, {
-        'type': 'game.update',
+        'type':'game.update',
         'message':{ #
             'winner':{
                 'name': winner.player.name,
@@ -51,9 +51,25 @@ def send_to_channel_layer(winner,loser,rating_change=None):
                 'game_score': loser.game_score,
                 'move': loser.move
             },
-            'game_finished': rating_change
+            'game_finished': rating_change,
+            'draw':False
         }
     })  
+
+def handle_draw(player1,player2):
+    match=player1.match
+    channel_layer = channels.layers.get_channel_layer()
+    async_to_sync(channel_layer.group_send)(match.name, {
+        'type':'game.update',
+        'message':{
+            'draw':True,
+            'move':player1.move
+            }
+    })  
+    player1.move = None
+    player1.save()
+    player2.move = None
+    player2.save()
 
 def complete_round(winner,loser):
     winner.game_score += 1
@@ -86,12 +102,15 @@ def complete_game(winner,loser):
 def game_round(player1, player2):
     if player1.move and player2.move:
         winner = decide_winner(player1,player2)       
-        loser = [x for x in [winner,player1,player2] if x != winner][0] 
-        
-        if winner.game_score < 2:
-            complete_round(winner,loser)  
+        if winner:
+            loser = [x for x in [winner,player1,player2] if x != winner][0] 
+            
+            if winner.game_score < 2:
+                complete_round(winner,loser)  
+            else:
+                complete_game(winner,loser)
         else:
-            complete_game(winner,loser)
+            handle_draw(player1,player2)
             
 def run_game(players):
     if len(players) >= 2 and len(players) % 2 == 0:

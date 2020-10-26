@@ -41,8 +41,8 @@ function findOpponent(state,userId) {
 }
 
 const buttonStyle={
-    fontSize:'150%',
+    fontSize:'75%',
     marginTop:20,
-    width:300,
-    height:100
+    width:150,
+    height:50
 }

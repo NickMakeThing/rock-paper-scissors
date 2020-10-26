@@ -29,7 +29,9 @@ const viewContainerStyle = {
     fontSize:'200%',
     display:'flex',
     flexDirection:'column',
-    height:'calc(100vh - 70px)',
+    minHeight:'calc(100% - 70px)',
     alignItems:'center',
-    justifyContent:'center'
+    justifyContent:'center',
+    // position:'relative',
+    // top:-70 //centers it to screen as opposed to space under header, but overlaps header when window resize vertically 
 }
