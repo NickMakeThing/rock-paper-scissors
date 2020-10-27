@@ -10,20 +10,20 @@ export default function NameInput(props){
     )
 }
 
-function createUserRequest(state,setState) {
+function createUserRequest(username,setCurrentUser) {
     fetch('http://localhost:8000/create/',{
         method:'POST',
         headers:{
             'Content-Type': 'application/json'
         },
         body:JSON.stringify({
-            name:state
+            name:username
         })
     })
         .then(response => {
             if(response.ok){
                 console.log('success')
-                setState(state)
+                setCurrentUser(username)
             } else {
                 console.log('fetch error')
             }

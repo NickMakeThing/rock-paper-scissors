@@ -23,7 +23,16 @@ export default function App(){
     const stateControl = {setMatch, setOpponentName, setLoading, setError}
     
     useEffect(() => {    
-        setUserId(window.localStorage.getItem('currentUser'))
+        var currentUser = window.localStorage.getItem('currentUser')
+        if(currentUser){
+            setUserId(currentUser)
+        } else {
+            setLoading(true)
+            createUserRequest(newUser=>{
+                setUserId(newUser)
+                setLoading(false)
+            })
+        }
     },[])
 
     useEffect(() => {   
@@ -91,9 +100,9 @@ function clearScreen(setters){
     setters.setDropDown(false)
 }
 
-function setCurrentUser(name){
+function setCurrentUser(name){ //or rename 'setLocalStorage'
     window.localStorage.setItem('currentUser', name)
-    setUserId(name) //doesnt work because outside of component
+    //setUserId(name) //doesnt work because outside of component
 }
 
 function connectToMatch(match,setMatch) {
@@ -118,6 +127,17 @@ function getUserStats(setState,userId){
     fetch('http://localhost:8000/player/'+userId+'/')
         .then(response => response.json())
         .then(data => setState(data))//????
+}
+
+function createUserRequest(setState) {
+    fetch('http://localhost:8000/create/',{
+        method:'POST'
+    })
+        .then(response => response.json())
+        .then(data=>{
+            setCurrentUser(data.name)
+            setState(data.name)
+        })
 }
 
 const mainContainerStyle={
