@@ -1,13 +1,22 @@
 import React, { useState } from 'react'
 
 export default function NameInput(props){
-    const [inputValue, setInputValue] = useState(null)
-    return (
+    const [inputValue, setInputValue] = useState(props.userId)
+    const [showInput, setShowInput] = useState(false)
+    var input
+    if(showInput){
+        input = <>
         <div style={{textAlign:'center'}}>
             <input onChange={e=>setInputValue(e.target.value)}/>
-            <button onClick={()=>createUserRequest(inputValue,props.setCurrentUser)}>Submit</button>
-        </div>
-    )
+            <button onClick={()=>createUserRequest(inputValue,props.setCurrentUser)}>
+                Submit
+            </button>
+        </div></>
+    }
+    return <div>
+        <button onClick={()=>setShowInput(!showInput)}>Change Name</button>
+        {input}
+    </div>
 }
 
 function createUserRequest(username,setCurrentUser) {

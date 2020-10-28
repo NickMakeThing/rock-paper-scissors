@@ -27,13 +27,10 @@ class CreatePlayerView(CreateAPIView):
         response.set_cookie(name,cookie,max_age=31536000000)
         return response
 
-    
-
-        
 
 class SendPlayerDataView(ListAPIView): #change name (leaderboarddata?)
     serializer_class = PlayerDataSerializer
-    queryset = PlayerStatus.objects.all().order_by('-score')
+    queryset = PlayerStatus.objects.all().exclude(wins=0,losses=0).order_by('-score')
     def list(self, request, *args, **kwargs):
         response = super().list(request)
         return response

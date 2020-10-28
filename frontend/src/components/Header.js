@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import LeaderBoard from './LeaderBoard'
-
 export default function Header(props){
     const score = props.userData.score
     const wins = props.userData.wins
@@ -21,7 +20,8 @@ export default function Header(props){
                             {props.userId}
                         </span> 
                     </div>
-                    <div style={dropDownStyle}>
+                    <div style={dropDownStyle}
+                        onClick={e=>e.stopPropagation()}>
                         score:{score}<br/>
                         wins:{wins}<br/>
                         losses:{losses}

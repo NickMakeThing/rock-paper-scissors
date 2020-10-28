@@ -35,40 +35,28 @@ export default function Game(props){
     }
     
     props.webSocket.onmessage = e => {
-        const update = JSON.parse(e.data).message
-        if(update.draw){
-            var result = 'draw'
-            setMovesFromLastRound({
-                [props.userId]:update.move,
-                [props.opponentName]:update.move
-            })
+        var message = JSON.parse(e.data)
+        if(message.game_state){
+            var gameState = getGameState(message.game_state) // rename loadGameState() and put setScore inside?
+            setScore(gameState)
         } else {
-            if(update.winner.name == props.userId){
-                var result = 'win'
-            } else {
-                var result = 'loss'
+            const update = message.message
+            var result = getRoundResult(update,props,setMovesFromLastRound)
+            updateScore(score, setScore, result)
+            setChosen(null)
+            if(update.game_finished){
+                var newRating =  endGame(result, update.game_finished)
+                setEndOfGameDetails({rating:newRating, result:result})
             }
-            setMovesFromLastRound({
-                [update.winner.name]:update.winner.move,
-                [update.loser.name]:update.loser.move
-            })
-        }
-
-        updateScore(score, setScore, result)
-        setChosen(null)
-        if(update.game_finished){
-            var ratingChange = update.game_finished
-            var newRating = endGame(result, ratingChange)
-            setEndOfGameDetails({rating:newRating, result:result})
         }
     }
 
     function endGame(result,ratingChange){
         if(result=='loss'){
-            return props.updateUserStats(ratingChange*-1)
+            return props.updateUserStats(ratingChange*-1,'loss')
         } 
         if(result == 'win'){
-            return props.updateUserStats(ratingChange)
+            return props.updateUserStats(ratingChange,'win')
         } 
     }
     
@@ -115,6 +103,13 @@ function showEndOfGame(endOfGameDetails,props){
     return null
 }
 
+function getGameState(game_state){
+    var wins = new Array(game_state.player_score).fill('win')
+    var losses = new Array(game_state.opponent_score).fill('loss')
+    console.log(wins,losses)
+    return wins.concat(losses)
+}
+
 function updateScore(score,setScore,result){
     var scoreCopy = [...score]
     if(scoreCopy.slice(-1) == 'draw'){
@@ -127,6 +122,60 @@ function updateScore(score,setScore,result){
         scoreCopy.push(result)
         setScore(scoreCopy)
     }
+}
+
+function getRoundResult(update,props,setMovesFromLastRound){
+    if(update.draw){
+        setMovesFromLastRound({
+            [props.userId]:update.move,
+            [props.opponentName]:update.move
+        })
+        return 'draw'
+    } else {
+        var winnerMove = update.winner.move
+        var loserMove = update.loser.move
+        if(winnerMove && loserMove){
+            setMovesFromLastRound({
+                [update.winner.name]:winnerMove,
+                [update.loser.name]:loserMove
+            })
+        } else {
+            console.log('place holder. else statement may be unnecassery')
+        }
+        return didUserWin(update.winner.name, props.userId)
+    }
+}
+
+function didUserWin(winner,userId){
+    if(winner == userId){
+        return 'win'
+    } else {
+        return 'loss'
+    }
+}
+
+function synchronizeGame(gameState, score, setScore){
+    if(isEmpty(score)){
+        setScore(gameState) //out of order. can maintain the order by also keeping state in local storage as a backup
+    } /*else {
+        if (countElement(gameState, 'wins') > countElement(score, 'wins')){
+            setScore([...score, 'win'])
+        }
+        if (countElement(gameState, 'losses') > countElement(score, 'losses')){
+            setScore([...score, 'loss'])
+        }
+    }*/
+}
+
+function isEmpty(array){
+    if(array.length == 0){
+        return true
+    }
+    return false
+}
+
+function countElement(array, element){
+    return array.filter(x => x==element).length
 }
 
 function getGameScale(){//change

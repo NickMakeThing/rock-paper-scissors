@@ -4,10 +4,11 @@ from django import setup
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
 setup()
 
-
 from rockpaperscissors.models import PlayerStatus, PlayerMatch
 from rockpaperscissors.match_maker import make_matches
 from rockpaperscissors.game import run_game
+
+timers = {}
 
 while(True):
     sleep(2) #atomic transaction on waiting and active?
@@ -15,4 +16,4 @@ while(True):
     waiting = list(waiting.order_by('score'))
     active = list(PlayerMatch.objects.all().order_by('match'))
     make_matches(waiting)
-    run_game(active)
+    run_game(active,timers)

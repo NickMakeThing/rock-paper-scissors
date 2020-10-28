@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import Header from './components/Header'
 import Game from './components/Game'
-import LeaderBoard from './components/LeaderBoard'
 import FindOpponentButton from './components/FindOpponentButton'
 import NameInput from './components/NameInput'
 import View from './components/View'
@@ -71,6 +70,7 @@ export default function App(){
         userId={userId} 
         webSocket={webSocket}
         opponentName={opponentName}
+        userStats={userStats}
         updateUserStats={updateUserStats}
         findOpponentButton={findOpponentButton}/>
 
