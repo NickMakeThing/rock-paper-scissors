@@ -137,14 +137,13 @@ def game_round(player1, player2, timer):
             undecided_function_name(winner,loser)
         else:
             handle_draw(player1,player2)
-        timer.add_time()
+        timer.reset()
     else:
         if timer.time >= 30:
             decide_default_winner(player1,player2)
             timer.reset()
         else:
             timer.add_time()# will only have to put once at end of function if uses server time to calculate.
-
 def run_game(players, timers):
     if len(players) >= 2 and len(players) % 2 == 0:
         with transaction.atomic():
