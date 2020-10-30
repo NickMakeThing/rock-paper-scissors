@@ -45,7 +45,7 @@ function showLeaderBoardModal(state){
         display: 'grid',
         gridTemplateColumns:'25% 25% 25% 25%'
     }
-    if(state.playerData.results){
+    if(state.leaderBoard && state.playerData.results){
         var arr=[
             <div style={Object.assign({color:'#878886'},grid)}>
                 <span>name</span>
@@ -54,7 +54,6 @@ function showLeaderBoardModal(state){
                 <span>losses</span>
             </div>
         ]
-
             for(let i of state.playerData.results){
                 arr.push(<div style={grid}>
                     <span>
