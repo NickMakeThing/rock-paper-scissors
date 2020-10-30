@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react'
 
 export default function LeaderBoard(props){
-    const [playerData, setPlayerData] = useState([])
-    
+    const [playerData, setPlayerData] = useState({})
     useEffect(() => {    
         if(props.leaderBoard){
             getPlayerData(setPlayerData)
@@ -10,6 +9,7 @@ export default function LeaderBoard(props){
     },[props.leaderBoard])
 
     const state = {
+        setPlayerData: setPlayerData,
         playerData: playerData, 
         leaderBoard: props.leaderBoard
     }
@@ -25,8 +25,8 @@ export default function LeaderBoard(props){
     )
 }
 
-function getPlayerData(setState){
-    fetch('http://localhost:8000/ranks/')
+function getPlayerData(setState,page='http://localhost:8000/ranks/?page=1'){
+    fetch(page)
         .then(response => response.json())
         .then(data => setState(data))//????
 }
@@ -41,7 +41,7 @@ function showLeaderBoardModal(state){
         display: 'grid',
         gridTemplateColumns:'25% 25% 25% 25%'
     }
-    if(state.leaderBoard){
+    if(state.playerData.results){
         var arr=[
             <div style={Object.assign({color:'#878886'},grid)}>
                 <span>name</span>
@@ -50,32 +50,50 @@ function showLeaderBoardModal(state){
                 <span>losses</span>
             </div>
         ]
-        for(let i of state.playerData){
-            arr.push(<div style={grid}>
-                <span>
-                    <span>{i.name}</span>
-                </span>
-                <span>
-                    <span style={{color:'#007FFF'}}>{i.score}</span>
-                </span>
-                <span>
-                    <span style={{color:'#007FFF'}}>{i.wins}</span>
-                </span>
-                <span>
-                    <span style={{color:'#007FFF'}}>{i.losses}</span>
-                </span>
-            </div>)
+
+            for(let i of state.playerData.results){
+                arr.push(<div style={grid}>
+                    <span>
+                        <span>{i.name}</span>
+                    </span>
+                    <span>
+                        <span style={{color:'#007FFF'}}>{i.score}</span>
+                    </span>
+                    <span>
+                        <span style={{color:'#007FFF'}}>{i.wins}</span>
+                    </span>
+                    <span>
+                        <span style={{color:'#007FFF'}}>{i.losses}</span>
+                    </span>
+                </div>)
+            }
+        var previousPage = state.playerData.previous
+        var nextPage = state.playerData.next
+        if(nextPage){
+            var nextButton = <button onClick={()=>getPlayerData(state.setPlayerData,nextPage)}>next</button>
+        }
+        if(previousPage){
+            var previousButton = <button onClick={()=>getPlayerData(state.setPlayerData,previousPage)}>previous</button>
         }
         return <div 
             style={modalStyle}
             onClick={e=>e.stopPropagation()}>
                 <h3 style={{textAlign:'center'}}>Leaderboard</h3>
                 {arr}
+                <div style={modalNavStyle}>
+                    {previousButton}
+                    numbers...
+                    current page
+                    ...numbers
+                    {nextButton}
+                </div>
         </div>
     }
 }
 
 const modalStyle = {
+    display:'flex',
+    flexDirection:'column',
     fontSize:'75%',
     textAlign:'left',
     position:'absolute',
@@ -91,3 +109,7 @@ const modalStyle = {
     zIndex:'1'
 }
 
+const modalNavStyle = {
+    alignSelf:'center',
+    marginTop:'auto'
+}

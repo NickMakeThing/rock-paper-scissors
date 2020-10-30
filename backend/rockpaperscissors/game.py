@@ -144,6 +144,7 @@ def game_round(player1, player2, timer):
             timer.reset()
         else:
             timer.add_time()# will only have to put once at end of function if uses server time to calculate.
+        
 def run_game(players, timers):
     if len(players) >= 2 and len(players) % 2 == 0:
         with transaction.atomic():

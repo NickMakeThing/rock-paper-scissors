@@ -6,6 +6,7 @@ from rest_framework.generics import CreateAPIView, UpdateAPIView, ListAPIView, R
 from .serializers import PlayerSerializer, PlayerDataSerializer
 from .match_maker import create_random_string, create_match_name as create_cookie
 from django.http import JsonResponse
+
 class Index(TemplateView):
     template_name='index.html'
 
@@ -31,9 +32,6 @@ class CreatePlayerView(CreateAPIView):
 class SendPlayerDataView(ListAPIView): #change name (leaderboarddata?)
     serializer_class = PlayerDataSerializer
     queryset = PlayerStatus.objects.all().exclude(wins=0,losses=0).order_by('-score')
-    def list(self, request, *args, **kwargs):
-        response = super().list(request)
-        return response
 
 class PlayerStats(RetrieveAPIView): #change name 
     serializer_class = PlayerDataSerializer
