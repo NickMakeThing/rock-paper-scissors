@@ -28,7 +28,11 @@ export default function LeaderBoard(props){
 function getPlayerData(setState,page='http://localhost:8000/ranks/?page=1'){
     fetch(page)
         .then(response => response.json())
-        .then(data => setState(data))//????
+        .then(data => {
+            var currentPage = page.split('=').pop()
+            data.currentPage = currentPage
+            setState(data)
+        })//????
 }
 
 function toggleLeaderBoard(e,props){
@@ -69,11 +73,41 @@ function showLeaderBoardModal(state){
             }
         var previousPage = state.playerData.previous
         var nextPage = state.playerData.next
+        var currentPage = parseInt(state.playerData.currentPage)
+        var pageNumbers = []
+        let page
+        for(let i=currentPage-2;i<currentPage+3;i++){
+            if(i>0 && i<12){//change 12 to var that is last page
+                if(i==currentPage){
+                    pageNumbers.push(
+                        <span 
+                            style={modalCurrentNumberStyle}>{i}</span>
+                        )
+                } else {
+                    //page = 'http://localhost:8000/ranks/?page='+i this causes weird bug.
+                    //must do the concat in in the arg space
+                    //tested using onMouseOver={()=>{console.log(page)}} <- gives bad result
+                    pageNumbers.push(
+                        <span
+                            style={modalNavNumberStyle}
+                            onClick={()=>getPlayerData(state.setPlayerData,'http://localhost:8000/ranks/?page='+i)}>{i}</span>
+                    )
+                }
+            }
+        }
         if(nextPage){
             var nextButton = <button onClick={()=>getPlayerData(state.setPlayerData,nextPage)}>next</button>
+        } else {
+            var nextButton = <button disabled>next</button> 
         }
         if(previousPage){
-            var previousButton = <button onClick={()=>getPlayerData(state.setPlayerData,previousPage)}>previous</button>
+            if(currentPage==2){
+                var previousButton = <button onClick={()=>getPlayerData(state.setPlayerData)}>previous</button>
+            } else {
+                var previousButton = <button onClick={()=>getPlayerData(state.setPlayerData,previousPage)}>previous</button>
+            }
+        } else {
+            var previousButton = <button disabled>previous</button> 
         }
         return <div 
             style={modalStyle}
@@ -82,9 +116,9 @@ function showLeaderBoardModal(state){
                 {arr}
                 <div style={modalNavStyle}>
                     {previousButton}
-                    numbers...
-                    current page
-                    ...numbers
+                    <div style={navNumbersContainerStyle}>
+                        {pageNumbers}
+                    </div>
                     {nextButton}
                 </div>
         </div>
@@ -112,4 +146,28 @@ const modalStyle = {
 const modalNavStyle = {
     alignSelf:'center',
     marginTop:'auto'
+}
+
+const navNumbersContainerStyle = {
+    display:'inline-block',
+    width:120,
+    textAlign:'center'
+}
+
+const modalNavNumberStyle = {
+    cursor: 'pointer',
+    textAlign:'center',
+    display:'inline-block',
+    color:'blue',
+    width:21,
+    border:'solid 1px grey',
+    borderRadius:2
+}
+
+const modalCurrentNumberStyle = {
+    textAlign:'center',
+    display:'inline-block',
+    width:21,
+    border:'solid 1px grey',
+    borderRadius:2
 }
