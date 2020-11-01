@@ -2,13 +2,8 @@ import React, { useState, useEffect } from 'react'
 import Header from './components/Header'
 import Game from './components/Game'
 import FindOpponentButton from './components/FindOpponentButton'
-import NameInput from './components/NameInput'
 import View from './components/View'
-import Cookie from 'js-cookie'
-//where to put css?
-//sass/styled components
 
-//-------------------------------------------------------------
 export default function App(){
     const [opponentName, setOpponentName] = useState(null) 
     const [loading, setLoading] = useState(false)
@@ -100,9 +95,8 @@ function clearScreen(setters){
     setters.setDropDown(false)
 }
 
-function setCurrentUser(name){ //or rename 'setLocalStorage'
+function setCurrentUser(name){
     window.localStorage.setItem('currentUser', name)
-    //setUserId(name) //doesnt work because outside of component
 }
 
 function connectToMatch(match,setMatch) {
@@ -138,6 +132,7 @@ function createUserRequest(setState) {
             setCurrentUser(data.name)
             setState(data.name)
         })
+        .catch(err=>console.log(err))
 }
 
 const mainContainerStyle={

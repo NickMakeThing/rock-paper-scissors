@@ -37,4 +37,5 @@ function createUserRequest(username,setCurrentUser) {
                 console.log('fetch error')
             }
         })
+        .catch(err=>console.log(err))
 }

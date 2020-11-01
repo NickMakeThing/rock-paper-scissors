@@ -3,7 +3,7 @@ import spinner from './images/spinner.gif'
 
 export default function Spinner(){
     return (<>
-        <div>Searching for match...</div>
+        {/* <div>Searching for match...</div> */}
         <img src={spinner} style={spinnerStyle}/>
     </>)
 }

@@ -3,6 +3,8 @@ from asgiref.sync import async_to_sync
 from .models import Match, PlayerMatch
 from django.db import transaction
 
+from django.db import connection
+
 class Timer():
     def __init__(self, matchname):
         self.matchname = matchname
@@ -113,7 +115,7 @@ def complete_game(winner,loser):
     send_to_channel_layer(winner,loser,result)
     Match.objects.get(name=winner.match.name).delete()
 
-def undecided_function_name(winner,loser): 
+def complete_round_or_game(winner,loser): 
     if winner.game_score < 2:
         complete_round(winner,loser)  
     else:
@@ -127,14 +129,14 @@ def decide_default_winner(player1,player2):
         if player2.move:
             winner = player2
             loser = player1
-        undecided_function_name(winner,loser)
+        complete_round_or_game(winner,loser)
 
 def game_round(player1, player2, timer):
     if player1.move and player2.move:
         winner = decide_winner(player1,player2)
         if winner:
             loser = [x for x in [winner,player1,player2] if x != winner][0] 
-            undecided_function_name(winner,loser)
+            complete_round_or_game(winner,loser)
         else:
             handle_draw(player1,player2)
         timer.reset()
@@ -144,8 +146,9 @@ def game_round(player1, player2, timer):
             timer.reset()
         else:
             timer.add_time()# will only have to put once at end of function if uses server time to calculate.
+    #print(connection.queries)
         
-def run_game(players, timers):
+def run_game(players, timers): #players is PlayerMatch queryset
     if len(players) >= 2 and len(players) % 2 == 0:
         with transaction.atomic():
             for i in range(0,len(players),2):

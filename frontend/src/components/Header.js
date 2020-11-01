@@ -16,7 +16,7 @@ export default function Header(props){
                     <div style={userIdContainer} 
                         onClick={toggleDropDown}>
                         <span style={profileIconStyle}/>
-                        <span style={{marginLeft:10}}> {/* needs work */}
+                        <span style={{marginLeft:10}}> 
                             {props.userId}
                         </span> 
                     </div>
@@ -78,6 +78,3 @@ const userIdContainer = {
     alignItems:'center',
     
 }
-//define function and style here, in function add/modify style eg dropDownStyle['display'] = 'block'
-//then call function and put style as arg in component. this gives 'strict mode does not allow' error
-//using object assign only returns one of them even though conditionals work fine.

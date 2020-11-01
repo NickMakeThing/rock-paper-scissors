@@ -52,12 +52,15 @@ class MatchFindingConsumer(WebsocketConsumer):
 class GameUpdateConsumer(WebsocketConsumer):
     def connect(self):
         match = self.scope['path'].split('/')[3]
-        self.match_object = Match.objects.get(name=match)
-        contestants = PlayerMatch.objects.filter(match=self.match_object)
         name=[*self.scope['cookies']][0]#change because error will happen when other cookies are present.
         self.cookie = self.scope['cookies'][name]
-        print(self.cookie)
-        self.player = PlayerStatus.objects.get(name=name) #too many queries.
+
+        contestants = PlayerMatch.objects.filter(match__name=match).select_related('match','player')
+        self.player = contestants.get(player__name=name).player
+        self.match_object = contestants.get(player__name=name).match
+        self.player_playermatch = contestants.get(player=self.player)
+        self.opponent_playermatch = contestants.exclude(player=self.player).first()
+
         if contestants.exists() and self.player.cookie == self.cookie:
             async_to_sync(self.channel_layer.group_add)(
                 match,
@@ -72,22 +75,20 @@ class GameUpdateConsumer(WebsocketConsumer):
     def receive(self, text_data):
         data=json.loads(text_data)
         print(data)
-        player_match = PlayerMatch.objects.get(player=self.player)# do this with less queries  
-        if player_match.match == self.match_object:    
-            form = MoveForm({'move':data['move']})
-            print('match name validated')
-            if form.is_valid():
-                print('message validated')
-                player_match.move = data['move']
-                player_match.save()
+        form = MoveForm({'move':data['move']})
+        print('match name validated')
+        #using this makes it work: player_match = PlayerMatch.objects.get(player=self.player) 
+        if form.is_valid():
+            print('message validated')
+            self.player_playermatch.move = data['move']
+            self.player_playermatch.save()
  
     def game_update(self, update):
         self.send(text_data=json.dumps(update))
 
     def send_game_state(self,contestants):
-        opponent = contestants.exclude(player=self.player).first()
-        opponent_score = opponent.game_score
-        player_score = contestants.get(player=self.player).game_score
+        opponent_score = self.player_playermatch.game_score
+        player_score = self.player_playermatch.game_score
         game_state={
             'game_state':{
                 'player_score': player_score,
