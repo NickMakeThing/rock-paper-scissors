@@ -12,13 +12,11 @@ from rockpaperscissors.game import run_game
 timers = {}
 
 while(True):
-    sleep(2) #atomic transaction on waiting and active?
+    sleep(2)
     with transaction.atomic():
         waiting = PlayerStatus.objects.filter(looking_for_opponent=True)
         waiting = list(waiting.order_by('score'))
         active = list(PlayerMatch.objects.all().order_by('match').select_related('player','match'))
     make_matches(waiting)
-    # from django.db import connection
-    # print(connection.queries)
     run_game(active,timers)
 

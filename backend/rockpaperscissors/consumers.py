@@ -6,13 +6,20 @@ from time import sleep
 from .forms import MoveForm
 import threading
 
-class MatchFindingConsumer(WebsocketConsumer):
+def getq():
+        from django.db import connection
+        a = connection.queries
+        print(len(a))
+        for i in a:
+            print('\n\n',i)
+
+class MatchFindingConsumer(WebsocketConsumer): #revisit
     def connect(self):
         self.accept()
         self.status_changed = False
         self.connected = True
         
-    def receive(self, text_data): #data
+    def receive(self, text_data): 
         name = text_data 
         cookie = self.scope['cookies'][name]
         print(self.scope['cookies'],cookie)
@@ -24,51 +31,46 @@ class MatchFindingConsumer(WebsocketConsumer):
             self.player = player
             waiting_for_opponent = threading.Thread(target=self.look_for_match, args=(player,self))
             waiting_for_opponent.start()
-            #when client gets matchnumber, he disconnect and connects with match in the url.
 
     def disconnect(self, close_code):
         self.connected = False
         if self.status_changed:
-            #match being made just afterwards (needs more detail for this to work):
-            #   if some condition, delete match if it exists.
             self.player.looking_for_opponent = False
             self.player.save()
 
     def look_for_match(self, player, self_instance):
         while(player.looking_for_opponent and self_instance.connected):
             print('still running: ',player.name)
-            player_match = PlayerMatch.objects.filter(player=player.id)
+            player_match = PlayerMatch.objects.filter(player=player).select_related('match')
             if player_match.exists():
                 player.looking_for_opponent = False
                 match = player_match.first().match
-                opponent = PlayerMatch.objects.filter(match=match).exclude(player=player).first() #could give 'opponent' field in playermatch
-                opponent = opponent.player.name # way too many queries
+                opponent = PlayerMatch.objects.filter(match=match).exclude(player=player).select_related('player').first() #could give 'opponent' field in playermatch
+                opponent = opponent.player.name
                 self_instance.send(text_data=json.dumps({
                     "match_name": match.name,
                     "opponent": opponent
                 }))
             sleep(2)
+            
 
 class GameUpdateConsumer(WebsocketConsumer):
     def connect(self):
         match = self.scope['path'].split('/')[3]
         name=[*self.scope['cookies']][0]#change because error will happen when other cookies are present.
         self.cookie = self.scope['cookies'][name]
-
-        contestants = PlayerMatch.objects.filter(match__name=match).select_related('match','player')
-        self.player = contestants.get(player__name=name).player
-        self.match_object = contestants.get(player__name=name).match
-        self.player_playermatch = contestants.get(player=self.player)
-        self.opponent_playermatch = contestants.exclude(player=self.player).first()
-
-        if contestants.exists() and self.player.cookie == self.cookie:
+        self.contestants = PlayerMatch.objects.filter(match__name=match).select_related('player','match')
+        self.player_playermatch = self.contestants.get(player__name=name)
+        self.opponent_playermatch = self.contestants.exclude(id=self.player_playermatch.id).first()
+        
+        if self.contestants.exists() and self.player_playermatch.player.cookie == self.cookie:
             async_to_sync(self.channel_layer.group_add)(
                 match,
                 self.channel_name
             )
             self.accept() 
             print('match found')
-            self.send_game_state(contestants)
+            self.send_game_state()
         else: 
             print('no match found')
 
@@ -77,18 +79,23 @@ class GameUpdateConsumer(WebsocketConsumer):
         print(data)
         form = MoveForm({'move':data['move']})
         print('match name validated')
-        #using this makes it work: player_match = PlayerMatch.objects.get(player=self.player) 
+        player_match = PlayerMatch.objects.get(player=self.player_playermatch.player) 
         if form.is_valid():
             print('message validated')
-            self.player_playermatch.move = data['move']
-            self.player_playermatch.save()
- 
+            player_match.move = data['move']
+            player_match.save()
+
     def game_update(self, update):
         self.send(text_data=json.dumps(update))
 
-    def send_game_state(self,contestants):
-        opponent_score = self.player_playermatch.game_score
+    def send_game_state(self):
         player_score = self.player_playermatch.game_score
+
+        #bug: (possibly async problem)
+            #when win one and refresh, past game_score does not show
+            #fixed when sleep(0.5) here
+            #also fixed when a new db query is done in this function
+        opponent_score = self.opponent_playermatch.game_score
         game_state={
             'game_state':{
                 'player_score': player_score,
@@ -96,4 +103,5 @@ class GameUpdateConsumer(WebsocketConsumer):
                 }
         }
         self.send(text_data=json.dumps(game_state))
+        
 

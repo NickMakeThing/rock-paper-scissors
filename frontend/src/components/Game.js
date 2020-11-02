@@ -36,7 +36,9 @@ export default function Game(props){
     
     props.webSocket.onmessage = e => {
         var message = JSON.parse(e.data)
+        console.log('message::::::::',message)
         if(message.game_state){
+            console.log('workingggggggg')
             var gameState = getGameState(message.game_state) // rename loadGameState() and put setScore inside?
             setScore(gameState)
         } else {

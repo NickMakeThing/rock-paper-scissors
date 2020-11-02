@@ -3,7 +3,6 @@ from asgiref.sync import async_to_sync
 from .models import Match, PlayerMatch
 from django.db import transaction
 
-from django.db import connection
 
 class Timer():
     def __init__(self, matchname):
@@ -52,8 +51,6 @@ def get_score_change(winner_rating, loser_rating):
 def send_to_channel_layer(winner,loser,rating_change=None):
     match = winner.match
     channel_layer = channels.layers.get_channel_layer()
-    #from channels.layers import channel_layers
-    #print(channel_layers['test_channel'])
     async_to_sync(channel_layer.group_send)(match.name, {
         'type':'game.update',
         'message':{ #
@@ -146,6 +143,7 @@ def game_round(player1, player2, timer):
             timer.reset()
         else:
             timer.add_time()# will only have to put once at end of function if uses server time to calculate.
+    #from django.db import connection
     #print(connection.queries)
         
 def run_game(players, timers): #players is PlayerMatch queryset
