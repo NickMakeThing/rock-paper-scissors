@@ -11,6 +11,8 @@ export default function Game(props){
     const [endOfGameDetails, setEndOfGameDetails] = useState(null)
 
     useEffect(() => {    
+        var message = props.webSocket.gameScore
+        setScoreIfConnectionStarted(message.game_state, setScore)
         var handleResize = () => {
             let newState = getGameScale()
             setGameScale(newState)
@@ -36,12 +38,8 @@ export default function Game(props){
     
     props.webSocket.onmessage = e => {
         var message = JSON.parse(e.data)
-        console.log('message::::::::',message)
-        if(message.game_state){
-            console.log('workingggggggg')
-            var gameState = getGameState(message.game_state) // rename loadGameState() and put setScore inside?
-            setScore(gameState)
-        } else {
+        var isConnectionMessage = setScoreIfConnectionStarted(message.game_state, setScore)
+        if(!isConnectionMessage){
             const update = message.message
             var result = getRoundResult(update,props,setMovesFromLastRound)
             updateScore(score, setScore, result)
@@ -63,8 +61,6 @@ export default function Game(props){
     }
     
     function sendMove(move){
-        //in game.py pass pass doesnt result in a round and moves stay put in db
-        //not a big problem, should be adjusted
         if(move){
             props.webSocket.send(JSON.stringify({move:move[0]}))
         }    
@@ -103,6 +99,16 @@ function showEndOfGame(endOfGameDetails,props){
         }
     }
     return null
+}
+
+function setScoreIfConnectionStarted(connectionMessage, setScore){
+    if(connectionMessage){
+        var gameState = getGameState(connectionMessage)
+        setScore(gameState)
+        return true
+    } else {
+        return false
+    }
 }
 
 function getGameState(game_state){
@@ -154,30 +160,6 @@ function didUserWin(winner,userId){
     } else {
         return 'loss'
     }
-}
-
-function synchronizeGame(gameState, score, setScore){
-    if(isEmpty(score)){
-        setScore(gameState) //out of order. can maintain the order by also keeping state in local storage as a backup
-    } /*else {
-        if (countElement(gameState, 'wins') > countElement(score, 'wins')){
-            setScore([...score, 'win'])
-        }
-        if (countElement(gameState, 'losses') > countElement(score, 'losses')){
-            setScore([...score, 'loss'])
-        }
-    }*/
-}
-
-function isEmpty(array){
-    if(array.length == 0){
-        return true
-    }
-    return false
-}
-
-function countElement(array, element){
-    return array.filter(x => x==element).length
 }
 
 function getGameScale(){//change

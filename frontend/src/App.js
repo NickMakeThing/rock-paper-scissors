@@ -101,15 +101,18 @@ function setCurrentUser(name){
 
 function connectToMatch(match,setMatch) {
     const webSocket = new WebSocket('ws://'+window.location.host+'/ws/match/'+match.name+'/')
-    
+    webSocket.gameScore = {game_score:false}
+
     webSocket.onopen = function(e) {
         console.log('connected to match')
         setMatch({name:match.name,connected:true})
     }
+
     webSocket.onmessage = function(e) {
-        const data = JSON.parse(e.data)
-        console.log(data)
+        const data = JSON.parse(e.data)   
+        webSocket.gameScore = data                             
     }
+    
     webSocket.onclose = function(e) {
         console.error('socket closed.')
         setMatch({name:'',connected:false})
@@ -120,7 +123,7 @@ function connectToMatch(match,setMatch) {
 function getUserStats(setState,userId){
     fetch('http://localhost:8000/player/'+userId+'/')
         .then(response => response.json())
-        .then(data => setState(data))//????
+        .then(data => setState(data))
 }
 
 function createUserRequest(setState) {
