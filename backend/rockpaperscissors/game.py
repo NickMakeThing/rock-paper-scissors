@@ -2,21 +2,27 @@ import channels.layers
 from asgiref.sync import async_to_sync
 from .models import Match, PlayerMatch
 from django.db import transaction
-
+import time
 
 class Timer():
     def __init__(self, matchname):
         self.matchname = matchname
         self.time = 0
+        self.start_time = time.time()
+        self.game_finished = False
     
     def reset(self):
         self.time = 0
+        self.start_time = time.time()
 
     def add_time(self):
-        self.time += 2 #might want to actually use time of server and update ever loop iteration
+        self.time = time.time() - self.start_time
 
     def get_matchname(self):
         return self.matchname
+
+    def stop(self):
+        self.game_finished = True
 
 def decide_winner(player1,player2):
     CASES = {
@@ -110,7 +116,7 @@ def complete_game(winner,loser):
     
     result = score_change_value
     send_to_channel_layer(winner,loser,result)
-    Match.objects.get(name=winner.match.name).delete()
+    end_game(winner,timer)
 
 def complete_round_or_game(winner,loser): 
     if winner.game_score < 2:
@@ -128,25 +134,29 @@ def decide_default_winner(player1,player2):
             loser = player1
         complete_round_or_game(winner,loser)
 
+def end_game(either_player,timer):
+    timer.stop()
+    Match.objects.get(name=either_player.match.name).delete()
+
 def game_round(player1, player2, timer):
     if player1.move and player2.move:
         winner = decide_winner(player1,player2)
         if winner:
-            loser = [x for x in [winner,player1,player2] if x != winner][0] 
+            loser = [x for x in [player1,player2] if x != winner][0] 
             complete_round_or_game(winner,loser)
         else:
             handle_draw(player1,player2)
         timer.reset()
     else:
-        if timer.time >= 30:
+        if timer.time >= 90:
+            end_game(player1,timer)
+        elif timer.time >= 30:
             decide_default_winner(player1,player2)
             timer.reset()
-        else:
-            timer.add_time()# will only have to put once at end of function if uses server time to calculate.
-    #from django.db import connection
-    #print(connection.queries)
+    timer.add_time()
+    print(timer.time)
         
-def run_game(players, timers): #players is PlayerMatch queryset
+def run_game(players, timers):
     if len(players) >= 2 and len(players) % 2 == 0:
         with transaction.atomic():
             for i in range(0,len(players),2):
@@ -160,7 +170,8 @@ def run_game(players, timers): #players is PlayerMatch queryset
                         timer = Timer(player1.match)
                         timers[player1.match] = timer
                         game_round(player1,player2,timer)
-                    
+                    if timer.game_finished:
+                        del timers[player1.match]  
                 else:
                     assert('player mismatch')
                     print('\n\n\nbad match\n\n')

@@ -22,7 +22,6 @@ class MatchFindingConsumer(WebsocketConsumer): #revisit
     def receive(self, text_data): 
         name = text_data 
         cookie = self.scope['cookies'][name]
-        print(self.scope['cookies'],cookie)
         player = PlayerStatus.objects.get(name=name)
         if player.cookie == cookie:
             player.looking_for_opponent = True
@@ -57,7 +56,8 @@ class MatchFindingConsumer(WebsocketConsumer): #revisit
 class GameUpdateConsumer(WebsocketConsumer):
     def connect(self):
         match = self.scope['path'].split('/')[3]
-        name=[*self.scope['cookies']][0]#change because error will happen when other cookies are present.
+        print(self.scope['cookies'])
+        name=self.scope['cookies']['name']
         self.cookie = self.scope['cookies'][name]
         self.contestants = PlayerMatch.objects.filter(match__name=match).select_related('player','match')
         self.player_playermatch = self.contestants.get(player__name=name)
@@ -79,7 +79,7 @@ class GameUpdateConsumer(WebsocketConsumer):
         print(data)
         form = MoveForm({'move':data['move']})
         print('match name validated')
-        player_match = PlayerMatch.objects.get(player=self.player_playermatch.player) 
+        player_match = PlayerMatch.objects.get(player=self.player_playermatch.player)
         if form.is_valid():
             print('message validated')
             player_match.move = data['move']

@@ -19,4 +19,3 @@ while(True):
         active = list(PlayerMatch.objects.all().order_by('match').select_related('player','match'))
     make_matches(waiting)
     run_game(active,timers)
-

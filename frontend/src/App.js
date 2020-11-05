@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import Cookies from 'js-cookie'
 import Header from './components/Header'
 import Game from './components/Game'
 import FindOpponentButton from './components/FindOpponentButton'
@@ -37,6 +38,7 @@ export default function App(){
 
     useEffect(() => {    
         if(match.name && !match.connected){
+            Cookies.set('name',userId)
             setWebSocket(connectToMatch(match,setMatch))
         }
         if(match.connected){
