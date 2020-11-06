@@ -12,7 +12,8 @@ export default function Game(props){
 
     useEffect(() => {    
         var message = props.webSocket.gameScore
-        setScoreIfConnectionStarted(message.game_state, setScore)
+        setScoreOnConnect(message,setScore)
+
         var handleResize = () => {
             let newState = getGameScale()
             setGameScale(newState)
@@ -38,8 +39,13 @@ export default function Game(props){
     
     props.webSocket.onmessage = e => {
         var message = JSON.parse(e.data)
-        var isConnectionMessage = setScoreIfConnectionStarted(message.game_state, setScore)
-        if(!isConnectionMessage){
+        console.log(message)
+        if(message.type == 'connect'){
+            setScoreOnConnect(message,setScore)
+        } else if(message.type == 'disconnect'){
+            console.log(message.message)
+        } else if(message.type == 'game.update'){
+            console.log('WORKING')
             const update = message.message
             var result = getRoundResult(update,props,setMovesFromLastRound)
             updateScore(score, setScore, result)
@@ -101,21 +107,14 @@ function showEndOfGame(endOfGameDetails,props){
     return null
 }
 
-function setScoreIfConnectionStarted(connectionMessage, setScore){
-    if(connectionMessage){
-        var gameState = getGameState(connectionMessage)
-        setScore(gameState)
-        return true
-    } else {
-        return false
+function setScoreOnConnect(message,setScore){
+    var game_state = message.message
+    if(game_state){
+        var wins = new Array(game_state.player_score).fill('win')
+        var losses = new Array(game_state.opponent_score).fill('loss')
+        console.log(wins,losses)
+        setScore(wins.concat(losses))
     }
-}
-
-function getGameState(game_state){
-    var wins = new Array(game_state.player_score).fill('win')
-    var losses = new Array(game_state.opponent_score).fill('loss')
-    console.log(wins,losses)
-    return wins.concat(losses)
 }
 
 function updateScore(score,setScore,result){

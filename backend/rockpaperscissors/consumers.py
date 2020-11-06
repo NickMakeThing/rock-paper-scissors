@@ -90,18 +90,18 @@ class GameUpdateConsumer(WebsocketConsumer):
 
     def send_game_state(self):
         player_score = self.player_playermatch.game_score
-
-        #bug: (possibly async problem)
-            #when win one and refresh, past game_score does not show
-            #fixed when sleep(0.5) here
-            #also fixed when a new db query is done in this function
         opponent_score = self.opponent_playermatch.game_score
         game_state={
-            'game_state':{
+            'type':'connect',
+            'message':{
                 'player_score': player_score,
                 'opponent_score': opponent_score
                 }
         }
         self.send(text_data=json.dumps(game_state))
+    
+    def disconnect(self, message):
+        self.send(text_data=json.dumps(message))
+        self.close()
         
 
