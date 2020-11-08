@@ -39,13 +39,11 @@ export default function Game(props){
     
     props.webSocket.onmessage = e => {
         var message = JSON.parse(e.data)
-        console.log(message)
         if(message.type == 'connect'){
             setScoreOnConnect(message,setScore)
         } else if(message.type == 'disconnect'){
             console.log(message.message)
         } else if(message.type == 'game.update'){
-            console.log('WORKING')
             const update = message.message
             var result = getRoundResult(update,props,setMovesFromLastRound)
             updateScore(score, setScore, result)
@@ -112,7 +110,6 @@ function setScoreOnConnect(message,setScore){
     if(game_state){
         var wins = new Array(game_state.player_score).fill('win')
         var losses = new Array(game_state.opponent_score).fill('loss')
-        console.log(wins,losses)
         setScore(wins.concat(losses))
     }
 }

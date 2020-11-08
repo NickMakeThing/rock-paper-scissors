@@ -12,9 +12,9 @@ class Index(TemplateView):
 
 class CreatePlayerView(CreateAPIView):
     serializer_class = PlayerSerializer
-    
     def create(self, request, *args, **kwargs):
-        guest_number = PlayerStatus.objects.all().last().id + 1
+        last_player = PlayerStatus.objects.all().last()
+        guest_number = last_player.id + 1 if last_player else 1
         name = 'guest-'+str(guest_number) #maybe do guest_ instead
         random_string = create_random_string()
         cookie = create_cookie(name + random_string)
@@ -25,7 +25,7 @@ class CreatePlayerView(CreateAPIView):
             request.data['name'], cookie,
             max_age=31536000000, httponly=True
         )
-        response.set_cookie(name,cookie,max_age=31536000000)
+        response.set_cookie(name,cookie,max_age=31536000000,samesite='strict')
         return response
 
 

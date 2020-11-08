@@ -2,6 +2,7 @@ import React from 'react'
 import rock from './images/rock.jpg'
 import paper from './images/paper.jpg'
 import scissors from './images/scissors.png'
+
 export default function Choice(props){
     return (
         <div style={{textAlign:'center'}}>
@@ -18,16 +19,14 @@ function displayChoices(props) {
     ].map(choice =>{
         if(choice.name==props.chosen){
             return <img src={choice.image} 
-                style={chosenStyle}
-                width={100} 
-                heigh={100}/>
+                key={choice.name}
+                style={chosenStyle}/>
         } else {
             return <img src={choice.image} 
-                id={choice.name}
+                key={choice.name}
                 style={choiceStyle}
-                onClick={props.choiceClick}
-                width={100} 
-                heigh={100}/>
+                id={choice.name}
+                onClick={props.choiceClick}/>
         }
     })
 }

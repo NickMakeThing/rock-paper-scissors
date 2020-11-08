@@ -45,13 +45,16 @@ function imageOfLastMove(move){
 }
 
 function displayScore(score){
-    score = score.map(result =>{
-            return <div style={middleBoxStyle}>{result}</div>
+    var count = 0
+    score = score.map((result) =>{
+            count++
+            return <div key={'round'+count}style={middleBoxStyle}>{result}</div>
+            
     })
-    score[0] = [score[0],<br/>]
+    score[0] = [score[0],<br key={'linebreak'}/>]
     return score
 }
-//{whiteSpace: 'nowrap', margin:'50px', marginTop:'0px'}
+
 const displayContainerStyle = {
     display:'flex'
 }
