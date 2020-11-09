@@ -19,19 +19,23 @@ export default function FindOpponentButton(props){
 function findOpponent(state,userId) {
     state.setLoading(true)
     const webSocket = new WebSocket('ws://'+window.location.host+'/ws/find_match/')
-
+    webSocket.match_found = false
+    
     webSocket.onopen = function(e) {
         console.log('connected: looking for match')
     }
     webSocket.onmessage = function(e) {
         const data = JSON.parse(e.data)
+        webSocket.match_found = data.match_name
         webSocket.close()
         console.log(data.match_name)
         state.setOpponentName(data.opponent)
         state.setMatch({name:data.match_name,connected:false})
     }
     webSocket.onclose = function(e) {
-        //todo: if not successfully retrieved match name, setloading(false)
+        if(!webSocket.match_found){
+            state.setLoading(false)
+        }
         console.error('socket closed: match finding complete or a.')
     }
     setTimeout(() => {

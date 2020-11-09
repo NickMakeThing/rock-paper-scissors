@@ -212,7 +212,7 @@ def test_run_game():
     # player2 = data['player2']
     # player1.match = match; player1.save()
     # game.run_game([player1,player2],timers)
-    #get assertion working so i can test it
+
 
     
 
