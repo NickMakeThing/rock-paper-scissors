@@ -6,6 +6,7 @@ from channels.testing import WebsocketCommunicator
 from rockpaperscissors.consumers import GameUpdateConsumer
 from asgiref.sync import sync_to_async, async_to_sync
 from channels.db import database_sync_to_async as db_async
+from time import sleep
 
 def make_data(name1,name2,match='dsfgfdgfd'):
     match = Match.objects.create(name=match)    
@@ -29,10 +30,10 @@ def test_decide_winner():
     for i in ['r','p','s']:
         bob.move = i
         greg.move = i
-        assert game.decide_winner(bob,greg) == 'draw'
+        assert game.decide_winner(bob,greg) == None
 
 @pytest.mark.django_db
-def test_change_rating():
+def test_get_score_change():
     assert game.get_score_change(1000,100) < game.get_score_change(100,1000)
     assert game.get_score_change(110,100) < game.get_score_change(100,100) < game.get_score_change(100,110)
     assert game.get_score_change(0,300) == 40 == game.get_score_change(-300,300)
@@ -54,18 +55,38 @@ def test_complete_round():
     assert bob.game_score == 1 and greg.game_score == 0
     assert bob.move == greg.move == None   
 
+def test_timer():
+    timer = game.Timer()
+    sleep(1)
+    timer.add_time()
+    assert timer.round_time > 1 and timer.round_time < 1.1
+    assert timer.timeout_time > 1 and timer.timeout_time < 1.1
+    timer.reset()
+    assert timer.round_time == timer.timeout_time == 0
+    assert timer.game_finished == False
+    timer.missed_round = 2
+    timer.start_time -= 60
+    timer.add_time()
+    assert timer.round_time < 1
+    assert timer.timeout_time > 60
+    timer.stop()
+    assert timer.game_finished == True
+
 @pytest.mark.django_db
 def test_complete_game():
+    timer = game.Timer()
     data = make_data('bob','greg')
     bob_match = data['player1']
     greg_match = data['player2']
     bob = bob_match.player
     greg = greg_match.player
+    assert timer.game_finished == False
     assert greg.wins == greg.losses == bob.wins == bob.losses == 0
     assert bob.score == greg.score == 100
-    game.complete_game(bob_match,greg_match)
+    game.complete_game(bob_match,greg_match,timer)
     bob = PlayerStatus.objects.get(name=bob.name)
     greg = PlayerStatus.objects.get(name=greg.name)
+    assert timer.game_finished == True
     assert bob.wins == 1 and bob.losses == 0
     assert greg.wins == 0 and greg.losses == 1
     assert greg.score == 90
@@ -73,16 +94,20 @@ def test_complete_game():
 
 @pytest.mark.django_db
 def test_game_round():
+    timer = game.Timer()
     data = make_data('bob','greg')
     bob = data['player1']
     greg = data['player2']
     match = data['match']
     assert bob.game_score == 0
     assert Match.objects.filter(name=match.name).exists() == True
+    sleep(1)
+    game.game_round(bob,greg,timer)
+    assert timer.round_time > 1 and timer.timeout_time > 1
     for i in range(3):
         bob.move = 'r'; bob.save()
         greg.move = 's'; greg.save()
-        game.game_round(bob,greg)
+        game.game_round(bob,greg,timer)
         bob = PlayerMatch.objects.filter(player=bob.player)
         if i == 0:
             bob = bob.first()
@@ -95,13 +120,28 @@ def test_game_round():
             assert bob.exists() == False
             assert PlayerStatus.objects.get(name='bob').wins == 1
             assert Match.objects.filter(name=match.name).exists() == False
-        
+    PlayerStatus.objects.all().delete()
+    timer = game.Timer()
+    data = make_data('bob','greg')
+    bob = data['player1']
+    greg = data['player2']
+    match = data['match']
+    timer.round_time = 31
+    bob.move = 'r'; bob.save()
+    game.game_round(bob,greg,timer)
+    assert bob.game_score == 1
+    assert timer.round_time < timer.timeout_time
+    timer.timeout_time = 91
+    game.game_round(bob,greg,timer)
+    assert Match.objects.filter(name=match.name).exists() == False
+
 @pytest.mark.django_db
 def test_send_to_channel_layer(): #may need to redo to call function directly
     data = make_data('bob','greg')
     bob = data['player1']
     greg = data['player2']
     match = data['match']
+    timer=game.Timer()
     channel_layer = layers.get_channel_layer()
     async_to_sync(channel_layer.flush)()
     async_to_sync(channel_layer.group_add)(
@@ -112,7 +152,7 @@ def test_send_to_channel_layer(): #may need to redo to call function directly
         bob = PlayerMatch.objects.get(player=bob.player)
         bob.move = 'r'; bob.save()
         greg.move = 's'; greg.save()
-        game.game_round(bob,greg)
+        game.game_round(bob,greg,timer)
         response = async_to_sync(channel_layer.receive)('test_channel')
         message = response['message']
         if i == 0:
@@ -144,35 +184,35 @@ def test_run_game():
         player1.move = 'r'; player1.save()
         player2.move = 's'; player2.save()
     players = list(PlayerMatch.objects.all().order_by('match'))
-    game.run_game(players)
+    timers = {}
+    game.run_game(players,timers)
+    assert len(timers) == 5
     players = list(PlayerMatch.objects.all().order_by('match'))
     for i in players:
         if players.index(i)%2 == 0:
             assert i.game_score == 1
+            i.move = 'r'
         else:
             assert i.game_score == 0
-    PlayerStatus.objects.all().delete()
-    Match.objects.all().delete()
-    data = make_data('bob','greg')
-    match = Match.objects.create(name='wrong_match')
-    player1 = data['player1']
-    player2 = data['player2']
-    player1.match = match; player1.save()
-    game.run_game([player1,player2])
+            i.move = 's'
+    game.run_game(players,timers)
+    players = list(PlayerMatch.objects.all().order_by('match'))
+    for i in players:
+        if players.index(i)%2 == 0:
+            i.move = 'r'
+        else:
+            i.move = 's'
+    game.run_game(players,timers)
+    assert len(timers) == 0
+    # PlayerStatus.objects.all().delete()
+    # Match.objects.all().delete()
+    # data = make_data('bob','greg')
+    # match = Match.objects.create(name='wrong_match')
+    # player1 = data['player1']
+    # player2 = data['player2']
+    # player1.match = match; player1.save()
+    # game.run_game([player1,player2],timers)
     #get assertion working so i can test it
-"""def s():
-
-    @pytest.mark.asyncio
-    async def connect():   
-        communicator = WebsocketCommunicator(GameUpdateConsumer, "ws/match/dsfgfdgfd")
-        connected = await communicator.connect()
-        assert connected
-        return communicator
-
-    @pytest.mark.asyncio
-    async def receive(communicator): 
-        response = await communicator.receive_from(timeout=2)
-        return response"""
 
     
 

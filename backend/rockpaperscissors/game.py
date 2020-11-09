@@ -5,8 +5,7 @@ from django.db import transaction
 import time
 
 class Timer():
-    def __init__(self, matchname):
-        self.matchname = matchname
+    def __init__(self):
         self.start_time = time.time()
         self.round_time = 0
         self.timeout_time = 0
@@ -179,12 +178,13 @@ def run_game(players, timers):
                         timer = timers[player1.match]
                         game_round(player1,player2,timer)
                     else:
-                        timer = Timer(player1.match)
+                        timer = Timer()
                         timers[player1.match] = timer
                         game_round(player1,player2,timer)
                     if timer.game_finished:
                         del timers[player1.match]  
                 else:
+                    #error logging?
                     assert('player mismatch')
-                    print('\n\n\nbad match\n\n')
+                    print('\n\nbad match\n\n')
 

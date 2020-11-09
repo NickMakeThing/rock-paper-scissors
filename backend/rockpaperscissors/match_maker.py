@@ -18,13 +18,15 @@ def create_matches(matches):
     match_list = []
     playermatch_list = []
     playerstatus_list = []
-    next_match_id = Match.objects.all().last().id + 1
+
+    last_match = Match.objects.all().last()
+    next_match_id = last_match.id + 1 if last_match else 1
     for i in matches:
         player1 = i[0]; player2 = i[1]
         hash_input = random_string + player1.name + player2.name
         match_name = create_match_name(hash_input)
         print(match_name)
-        match_object = Match(id=next_match_id, name=match_name)
+        match_object = Match(id=next_match_id,name=match_name)
         match_list.append(match_object) 
         next_match_id += 1
         for j in [player1,player2]: 
@@ -33,7 +35,7 @@ def create_matches(matches):
             playerstatus_list.append(j)    
     with transaction.atomic():
         Match.objects.bulk_create(match_list) 
-        PlayerMatch.objects.bulk_create(playermatch_list)
+        PlayerMatch.objects.bulk_create(playermatch_list) #
         PlayerStatus.objects.bulk_update(playerstatus_list, ['looking_for_opponent'])
 
 def match_players_if_they_map_to_eachother(closest_scores):
