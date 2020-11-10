@@ -12,4 +12,5 @@ const spinnerStyle={
     lineHeight: '300px',
     width: '300px',
     height: '300px',
+    filter: 'blur(1px)'
 }

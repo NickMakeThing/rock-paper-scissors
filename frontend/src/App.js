@@ -4,6 +4,7 @@ import Header from './components/Header'
 import Game from './components/Game'
 import FindOpponentButton from './components/FindOpponentButton'
 import View from './components/View'
+import scissors_background from './components/images/scissors_background.jpg'
 
 export default function App(){
     const [opponentName, setOpponentName] = useState(null) 
@@ -72,29 +73,42 @@ export default function App(){
         findOpponentButton={findOpponentButton}/>
 
     const setters = {setLeaderBoard, setDropDown}
-    return  <div
+    const background = blurBackgroundIfNotLandingView(match,loading)
+    return <div 
                 style={mainContainerStyle}
                 onClick={()=>clearScreen(setters)}>
-                <Header
+                {/* <Header
                     userId={userId}
                     userData={userStats}
                     dropDown={dropDown}
                     leaderBoard={leaderBoard}
                     setDropDown={setDropDown}
-                    setLeaderBoard={setLeaderBoard}/>
+                    setLeaderBoard={setLeaderBoard}/> */}
                 <View
                     game={game}
                     match={match}
                     loading={loading}
                     userStats={userStats}
                     findOpponentButton={findOpponentButton}/>
-                {/* <NameInput setCurrentUser={setCurrentUser}/> */}
+                <img src={'http://localhost:8080/src/components/images/scissors_background.jpg'} style={background}/>
+                <div style={whiteStyle}/>
             </div>
 }
 
 function clearScreen(setters){
     setters.setLeaderBoard(false)
     setters.setDropDown(false)
+}
+
+function blurBackgroundIfNotLandingView(match,loading){
+    if(match.connected || loading){
+        return {
+            ...backgroundStyle,
+            filter: 'blur(4px) brightness(1200%)'
+        }
+    } else {
+        return backgroundStyle
+    }
 }
 
 function setCurrentUser(name){
@@ -141,5 +155,26 @@ function createUserRequest(setState) {
 }
 
 const mainContainerStyle={
-    height:'100%'
+    height:'100%',
+    fontFamily:'Arial'
+}
+
+const backgroundStyle = {
+    position:'fixed',
+    zIndex:-1,
+    // objectFit:'scale-down',
+    height:1475,
+    width:1967,
+    left:353,
+    top:-95,
+    transition:'0.5s'
+}
+const whiteStyle ={
+    backgroundColor:'white',
+    position:'absolute',
+    height:5,
+    width:5,
+    top:172,
+    left:1162,
+    transform: 'translateY(-50%) translateX(-50%)'
 }

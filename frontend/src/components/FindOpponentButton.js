@@ -1,16 +1,16 @@
 import React from 'react'
 export default function FindOpponentButton(props){
     return (
-        <span>
-            <span 
+        <>
+            {/* <span 
                 style={{color:'red'}}>
                 {props.error}
-            </span><br/>
+            </span><br/> */}
             <button style={buttonStyle}
                 onClick={()=>findOpponent(props.stateControl,props.userId)}>
                 Play Now
             </button>
-        </span>
+        </>
     )
 }
 
@@ -33,9 +33,7 @@ function findOpponent(state,userId) {
         state.setMatch({name:data.match_name,connected:false})
     }
     webSocket.onclose = function(e) {
-        if(!webSocket.match_found){
-            state.setLoading(false)
-        }
+ 
         console.error('socket closed: match finding complete or a.')
     }
     setTimeout(() => {
@@ -45,8 +43,8 @@ function findOpponent(state,userId) {
 }
 
 const buttonStyle={
-    fontSize:'75%',
-    marginTop:20,
-    width:150,
-    height:50
+    fontSize:44,
+    width:259,
+    height:89,
+    borderRadius:10
 }

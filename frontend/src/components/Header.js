@@ -11,11 +11,10 @@ export default function Header(props){
     const dropDownStyle = showOrHideDropDown(props.dropDown)
 
     return (
-        <header style={rootStyle}>
-                <h2 style={leftSideStyle}>
-                    <div style={userIdContainer} 
+        <header style={{fontSize:33}}>
+                <span style={userIdContainer}>
+                    <div  
                         onClick={toggleDropDown}>
-                        <span style={profileIconStyle}/>
                         <span style={{marginLeft:10}}> 
                             {props.userId}
                         </span> 
@@ -26,12 +25,12 @@ export default function Header(props){
                         wins:{wins}<br/>
                         losses:{losses}
                     </div>
-                </h2>
-                <h2 style={rightSideStyle}>
+                </span>
+                <span style={rightSideStyle}>
                     <LeaderBoard
                         leaderBoard={props.leaderBoard}
                         setLeaderBoard={props.setLeaderBoard}/>
-                </h2>
+                </span>
         </header>
     )
 }
@@ -51,30 +50,14 @@ function showOrHideDropDown(dropDown){
         return dropDownStyle
     }
 }
-const rootStyle = {
-    display:'flex',
-    alignItems:'center',
-    justifyContent:'space-between',
-    height:70
-}
-const leftSideStyle = {   
-    display:'inline-block',
-    marginLeft:25
-}
 const rightSideStyle = {    
-    display:'inline-block',
-    marginRight:25
-}
-const profileIconStyle = {
-    display:'inline-block',
-    height:'50px',
-    width:'50px',
-    borderRadius:'50px',
-    backgroundColor:'white'
+    position:'absolute',
+    top:25,
+    right:185
 }
 const userIdContainer = {
-    display:'flex',
+    position:'absolute',
     cursor:'pointer',
-    alignItems:'center',
-    
+    top:25,
+    left:185
 }

@@ -5,28 +5,45 @@ export default function LandingView(props){
     const findOpponentButton = props.findOpponentButton
     return(
     <div >
-        <div>
-            <b>Play rock paper scissors<br/> 
-            against other people</b>
+        <span style={headingStyle}>Rock Paper Scissors</span>
+        <span style={infoStyle}>
+            Play against other people in a game<br/>
+            of rock paper scissors
+        </span>
+        <span style={buttonStyle}>
             {findOpponentButton}
-        </div>
-        <div style={horizontalLineStyle}/>
-        <div>
+        </span>
+        {/* <div>
             <div style={lowerSectionStyle}>Your stats</div>
             <div>wins: {userStats.wins}</div>
             <div>losses: {userStats.losses}</div>
             <div>score: {userStats.score}</div>
-        </div>
+        </div> */}
     </div>
     )
 }
 
-const horizontalLineStyle = {
-    width:'40vw',
-    height:1,
-    marginTop:45,
-    marginBottom:45,
-    backgroundColor:'black'
+
+
+const headingStyle = {
+    position:'absolute',
+    fontSize:60,
+    top:292,
+    left:185
+}
+
+const infoStyle = {
+    position:'absolute',
+    fontSize:40,
+    top:381,
+    left:185,
+    textAlign:'left'
+}
+
+const buttonStyle = {
+    position:'absolute',
+    top:535,
+    left:185
 }
 
 const lowerSectionStyle = {
