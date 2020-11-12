@@ -1,4 +1,9 @@
 env/
 *.pyc
 *.sqlite3
+Header.js
+LeaderBoard.js
+NameInput.js
 frontend/node_modules/
+backend/rockpaperscissors/static/build
+backend/webpack-stats.json

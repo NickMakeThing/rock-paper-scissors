@@ -1,26 +1,22 @@
 import React, { useState, useEffect } from 'react'
 
-export default function LeaderBoard(props){
+export default function LeaderBoard({setLeaderBoard,leaderBoard}){
+
     const [playerData, setPlayerData] = useState({})
     useEffect(() => {    
-        if(props.leaderBoard){
+        if(leaderBoard){
             getPlayerData(setPlayerData)
         }
-    },[props.leaderBoard])
+    },[leaderBoard])
 
-    const state = {
-        setPlayerData: setPlayerData,
-        playerData: playerData, 
-        leaderBoard: props.leaderBoard
-    }
     return (
         <>
             <span 
                 style={{cursor: 'pointer'}}
-                onClick={e=>toggleLeaderBoard(e,props)}>
+                onClick={e=>toggleLeaderBoard(e,setLeaderBoard,leaderBoard)}>
                 Leaderboard
             </span>
-            {showLeaderBoardModal(state)}
+            {showLeaderBoardModal(setPlayerData,playerData,leaderBoard)}
         </>
     )
 }
@@ -36,17 +32,17 @@ function getPlayerData(setState,page='http://localhost:8000/ranks/?page=1'){
         .catch(err=>console.log(err))
 }
 
-function toggleLeaderBoard(e,props){
+function toggleLeaderBoard(e,setLeaderBoard,leaderBoard){
     e.stopPropagation()
-    props.setLeaderBoard(!props.leaderBoard)
+    setLeaderBoard(!leaderBoard)
 }
 
-function showLeaderBoardModal(state){ // could be its own component
+function showLeaderBoardModal(setPlayerData,playerData,leaderBoard){ // could be its own component
     var grid = {
         display: 'grid',
         gridTemplateColumns:'25% 25% 25% 25%'
     }
-    if(state.leaderBoard && state.playerData.results){
+    if(leaderBoard && playerData.results){
         var arr=[
             <div style={Object.assign({color:'#878886'},grid)}>
                 <span>name</span>
@@ -55,7 +51,7 @@ function showLeaderBoardModal(state){ // could be its own component
                 <span>losses</span>
             </div>
         ]
-            for(let i of state.playerData.results){
+            for(let i of playerData.results){
                 arr.push(<div style={grid}>
                     <span>
                         <span>{i.name}</span>
@@ -71,7 +67,7 @@ function showLeaderBoardModal(state){ // could be its own component
                     </span>
                 </div>)
             }
-        var modalNav = getModalNavigationButtons(state)
+        var modalNav = getModalNavigationButtons(setPlayerData,playerData)
         return <div 
             style={modalStyle}
             onClick={e=>e.stopPropagation()}>
@@ -88,13 +84,12 @@ function showLeaderBoardModal(state){ // could be its own component
     }
 }
 
-function getModalNavigationButtons(state){
-    var previousPage = state.playerData.previous
-    var nextPage = state.playerData.next
-    var currentPage = parseInt(state.playerData.currentPage)
+function getModalNavigationButtons(setPlayerData,playerData){
+    var previousPage = playerData.previous
+    var nextPage = playerData.next
+    var currentPage = parseInt(playerData.currentPage)
     var pageNumbers = []
-    var lastPage= Math.ceil(state.playerData.count/20)
-    let page
+    var lastPage= Math.ceil(playerData.count/20)
     for(let i=currentPage-2;i<currentPage+3;i++){
         if(i>0 && i<lastPage+1){
             if(i==currentPage){
@@ -109,21 +104,21 @@ function getModalNavigationButtons(state){
                 pageNumbers.push(
                     <span
                         style={modalNavNumberStyle}
-                        onClick={()=>getPlayerData(state.setPlayerData,'http://localhost:8000/ranks/?page='+i)}>{i}</span>
+                        onClick={()=>getPlayerData(setPlayerData,'http://localhost:8000/ranks/?page='+i)}>{i}</span>
                 )
             }
         }
     }
     if(nextPage){
-        var nextButton = <button onClick={()=>getPlayerData(state.setPlayerData,nextPage)}>next</button>
+        var nextButton = <button onClick={()=>getPlayerData(setPlayerData,nextPage)}>next</button>
     } else {
         var nextButton = <button disabled>next</button> 
     }
     if(previousPage){
         if(currentPage==2){
-            var previousButton = <button onClick={()=>getPlayerData(state.setPlayerData)}>previous</button>
+            var previousButton = <button onClick={()=>getPlayerData(setPlayerData)}>previous</button>
         } else {
-            var previousButton = <button onClick={()=>getPlayerData(state.setPlayerData,previousPage)}>previous</button>
+            var previousButton = <button onClick={()=>getPlayerData(setPlayerData,previousPage)}>previous</button>
         }
     } else {
         var previousButton = <button disabled>previous</button> 

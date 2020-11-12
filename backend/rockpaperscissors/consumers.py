@@ -88,6 +88,11 @@ class GameUpdateConsumer(WebsocketConsumer):
     def game_update(self, update):
         self.send(text_data=json.dumps(update))
 
+    def refresh_timer(self,update):
+        self.time = update['message']['time']
+        print(self.time,hasattr(self,'time'))
+        self.send(text_data=json.dumps(update))
+
     def send_game_state(self):
         player_score = self.player_playermatch.game_score
         opponent_score = self.opponent_playermatch.game_score
@@ -95,7 +100,8 @@ class GameUpdateConsumer(WebsocketConsumer):
             'type':'connect',
             'message':{
                 'player_score': player_score,
-                'opponent_score': opponent_score
+                'opponent_score': opponent_score,
+                'time': self.time if hasattr(self,'time') else None
                 }
         }
         self.send(text_data=json.dumps(game_state))

@@ -1,5 +1,5 @@
 import React from 'react'
-export default function FindOpponentButton(props){
+export default function FindOpponentButton({userId,stateControl}){
     return (
         <>
             {/* <span 
@@ -7,7 +7,7 @@ export default function FindOpponentButton(props){
                 {props.error}
             </span><br/> */}
             <button style={buttonStyle}
-                onClick={()=>findOpponent(props.stateControl,props.userId)}>
+                onClick={()=>findOpponent(stateControl,userId)}>
                 Play Now
             </button>
         </>

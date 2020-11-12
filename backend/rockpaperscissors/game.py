@@ -72,7 +72,8 @@ def send_to_channel_layer(winner,loser,rating_change=None):
                 'move': loser.move
             },
             'game_finished': rating_change,
-            'draw':False
+            'draw':False,
+            'time':time.time()
         }
     })  
 
@@ -90,7 +91,8 @@ def handle_draw(player1,player2):
         'type':'game.update',
         'message':{
                 'draw':True,
-                'move':player1.move
+                'move':player1.move,
+                'time':time.time()
             }
     })  
     player1.move = None
@@ -132,6 +134,15 @@ def complete_round_or_game(winner,loser,timer):
     else:
         complete_game(winner,loser,timer)
 
+def refresh_client_timer(match):
+    channel_layer = channels.layers.get_channel_layer()
+    async_to_sync(channel_layer.group_send)(match.name, {
+    'type':'refresh.timer',
+    'message':{
+            'time':time.time()
+        }
+})  
+
 def decide_default_winner(player1,player2,timer):
     if player1.move or player2.move:
         if player1.move:
@@ -144,6 +155,7 @@ def decide_default_winner(player1,player2,timer):
         timer.reset()
     else:
         timer.missed_round += 1
+        refresh_client_timer(player1.match)
 
 def end_game(either_player,timer):
     timer.stop()
@@ -174,15 +186,17 @@ def run_game(players, timers):
                 player1 = players[i]
                 player2 = players[i+1]
                 if player1.match == player2.match:
-                    if player1.match in timers:
-                        timer = timers[player1.match]
+                    match = player1.match
+                    if match in timers:
+                        timer = timers[match]
                         game_round(player1,player2,timer)
                     else:
                         timer = Timer()
-                        timers[player1.match] = timer
+                        timers[match] = timer
+                        refresh_client_timer(match)
                         game_round(player1,player2,timer)
                     if timer.game_finished:
-                        del timers[player1.match]  
+                        del timers[match]  
                 else:
                     #error logging?
                     assert('player mismatch')

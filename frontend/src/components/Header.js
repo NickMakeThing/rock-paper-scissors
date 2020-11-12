@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import LeaderBoard from './LeaderBoard'
-export default function Header(props){
-    const score = props.userData.score
-    const wins = props.userData.wins
-    const losses = props.userData.losses
+export default function Header({
+    userData: {score, wins, losses},
+    dropDown,
+    userId,
+    leaderBoard,
+    setLeaderBoard,
+    setDropDown
+}){
+    
     function toggleDropDown(e){
         e.stopPropagation()
-        props.setDropDown(!props.dropDown)
+        setDropDown(!dropDown)
     }
-    const dropDownStyle = showOrHideDropDown(props.dropDown)
+    const dropDownStyle = showOrHideDropDown(dropDown)
 
     return (
         <header style={{fontSize:33}}>
@@ -16,7 +21,7 @@ export default function Header(props){
                     <div  
                         onClick={toggleDropDown}>
                         <span style={{marginLeft:10}}> 
-                            {props.userId}
+                            {userId}
                         </span> 
                     </div>
                     <div style={dropDownStyle}
@@ -28,8 +33,8 @@ export default function Header(props){
                 </span>
                 <span style={rightSideStyle}>
                     <LeaderBoard
-                        leaderBoard={props.leaderBoard}
-                        setLeaderBoard={props.setLeaderBoard}/>
+                        leaderBoard={leaderBoard}
+                        setLeaderBoard={setLeaderBoard}/>
                 </span>
         </header>
     )

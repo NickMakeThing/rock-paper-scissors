@@ -1,14 +1,14 @@
 import React, { useState } from 'react'
 
-export default function NameInput(props){
-    const [inputValue, setInputValue] = useState(props.userId)
+export default function NameInput({userId, setCurrentUser}){
+    const [inputValue, setInputValue] = useState(userId)
     const [showInput, setShowInput] = useState(false)
     var input
     if(showInput){
         input = <>
         <div style={{textAlign:'center'}}>
             <input onChange={e=>setInputValue(e.target.value)}/>
-            <button onClick={()=>createUserRequest(inputValue,props.setCurrentUser)}>
+            <button onClick={()=>createUserRequest(inputValue,setCurrentUser)}>
                 Submit
             </button>
         </div></>
@@ -20,7 +20,7 @@ export default function NameInput(props){
 }
 
 function createUserRequest(username,setCurrentUser) {
-    fetch('http://localhost:8000/create/',{
+    fetch('/create/',{
         method:'POST',
         headers:{
             'Content-Type': 'application/json'

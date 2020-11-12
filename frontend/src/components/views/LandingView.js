@@ -1,8 +1,6 @@
 import React from 'react'
-
-export default function LandingView(props){
-    const userStats = props.userStats
-    const findOpponentButton = props.findOpponentButton
+import PieTimer from '../PieTimer'
+export default function LandingView({userStats, findOpponentButton}){
     return(
     <div >
         <span style={headingStyle}>Rock Paper Scissors</span>

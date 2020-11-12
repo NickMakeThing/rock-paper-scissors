@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react'
-import Choices from './Choices'
-import Display from './Display'
-import PlayAgainModal from './PlayAgainModal'
+import Choices from '../Choices'
+import Display from '../Display'
+import PlayAgainModal from '../PlayAgainModal'
 
-export default function Game(props){
+export default function Game({webSocket, updateUserStats, userId, opponentName}){
     const [chosen, setChosen] = useState(null)
     const [score, setScore] = useState([])
     const [gameScale, setGameScale] = useState('1')
     const [movesFromLastRound, setMovesFromLastRound] = useState(null)
     const [endOfGameDetails, setEndOfGameDetails] = useState(null)
+    const [time, setTime] = useState(null)
 
     useEffect(() => {    
-        var message = props.webSocket.gameScore
+        const date = new Date
+        setTime(date.getTime())
+        var message = webSocket.gameScore
         setScoreOnConnect(message,setScore)
 
         var handleResize = () => {
@@ -37,47 +40,58 @@ export default function Game(props){
         setChosen(e.target.id)
     }
     
-    props.webSocket.onmessage = e => {
+    webSocket.onmessage = e => {
         var message = JSON.parse(e.data)
-        if(message.type == 'connect'){
-            setScoreOnConnect(message,setScore)
-        } else if(message.type == 'disconnect'){
-            console.log(message.message)
-        } else if(message.type == 'game.update'){
-            const update = message.message
-            var result = getRoundResult(update,props,setMovesFromLastRound)
-            updateScore(score, setScore, result)
-            setChosen(null)
-            if(update.game_finished){
-                var newRating =  endGame(result, update.game_finished)
-                setEndOfGameDetails({rating:newRating, result:result})
-            }
+        switch(message.type){
+            case('connect'):
+                setScoreOnConnect(message,setScore)
+                console.log(message)
+                break
+            case('disconnect'):
+                console.log(message.message)
+                break
+            case('refresh.timer'):
+                var update = message.message
+                console.log('REFRESHING')
+                setTime(Math.round(update.time)*1000)
+                break
+            case('game.update'):
+                update = message.message
+                setTime(Math.round(update.time)*1000)
+                var result = getRoundResult(update,userId,opponentName,setMovesFromLastRound)
+                updateScore(score, setScore, result)
+                setChosen(null)
+                if(update.game_finished){
+                    var newRating =  endGame(result, update.game_finished)
+                    setEndOfGameDetails({rating:newRating, result:result})
+                }
         }
     }
 
     function endGame(result,ratingChange){
         if(result=='loss'){
-            return props.updateUserStats(ratingChange*-1,'loss')
+            return updateUserStats(ratingChange*-1,'loss')
         } 
         if(result == 'win'){
-            return props.updateUserStats(ratingChange,'win')
+            return updateUserStats(ratingChange,'win')
         } 
     }
     
     function sendMove(move){
         if(move){
-            props.webSocket.send(JSON.stringify({move:move[0]}))
+            webSocket.send(JSON.stringify({move:move[0]}))
         }    
     }
 
-    var endOfGameModal = showEndOfGame(endOfGameDetails,props)
+    var endOfGameModal = showEndOfGame(endOfGameDetails,webSocket)
 
     return (
         <div style={gameStyle}>
             <Display 
+                time={time}
                 score={score}
-                userId={props.userId}
-                opponentName={props.opponentName}
+                userId={userId}
+                opponentName={opponentName}
                 movesFromLastRound={movesFromLastRound}/>
             <Choices
                 chosen={chosen}
@@ -88,18 +102,18 @@ export default function Game(props){
     )
 }
 
-function showEndOfGame(endOfGameDetails,props){
+function showEndOfGame(endOfGameDetails,webSocket){
     if(endOfGameDetails){
         if(endOfGameDetails.result == 'win'){
             return <PlayAgainModal 
                 gameResult='won' 
                 newScore={endOfGameDetails.rating}
-                webSocket={props.webSocket}/>
+                webSocket={webSocket}/>
         } else {
             return <PlayAgainModal 
                 gameResult='lost' 
                 newScore={endOfGameDetails.rating}
-                webSocket={props.webSocket}/>
+                webSocket={webSocket}/>
         }
     }
     return null
@@ -128,11 +142,11 @@ function updateScore(score,setScore,result){
     }
 }
 
-function getRoundResult(update,props,setMovesFromLastRound){
+function getRoundResult(update, userId, opponentName, setMovesFromLastRound){
     if(update.draw){
         setMovesFromLastRound({
-            [props.userId]:update.move,
-            [props.opponentName]:update.move
+            [userId]:update.move,
+            [opponentName]:update.move
         })
         return 'draw'
     } else {
@@ -146,7 +160,7 @@ function getRoundResult(update,props,setMovesFromLastRound){
         } else {
             console.log('place holder. else statement may be unnecassery')
         }
-        return didUserWin(update.winner.name, props.userId)
+        return didUserWin(update.winner.name,userId)
     }
 }
 

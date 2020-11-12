@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import Cookies from 'js-cookie'
 import Header from './components/Header'
-import Game from './components/Game'
+import Game from './components/views/Game'
 import FindOpponentButton from './components/FindOpponentButton'
-import View from './components/View'
+import View from './components/views/View'
 import scissors_background from './components/images/scissors_background.jpg'
 
 export default function App(){
@@ -72,11 +72,10 @@ export default function App(){
         updateUserStats={updateUserStats}
         findOpponentButton={findOpponentButton}/>
 
-    const setters = {setLeaderBoard, setDropDown}
     const background = blurBackgroundIfNotLandingView(match,loading)
     return <div 
                 style={mainContainerStyle}
-                onClick={()=>clearScreen(setters)}>
+                onClick={()=>clearScreen(setLeaderBoard, setDropDown)}>
                 {/* <Header
                     userId={userId}
                     userData={userStats}
@@ -95,9 +94,9 @@ export default function App(){
             </div>
 }
 
-function clearScreen(setters){
-    setters.setLeaderBoard(false)
-    setters.setDropDown(false)
+function clearScreen(setLeaderBoard, setDropDown){
+    setLeaderBoard(false)
+    setDropDown(false)
 }
 
 function blurBackgroundIfNotLandingView(match,loading){
@@ -137,13 +136,13 @@ function connectToMatch(match,setMatch) {
 }
 
 function getUserStats(setState,userId){
-    fetch('http://localhost:8000/player/'+userId+'/')
+    fetch('/player/'+userId+'/')
         .then(response => response.json())
         .then(data => setState(data))
 }
 
 function createUserRequest(setState) {
-    fetch('http://localhost:8000/create/',{
+    fetch('/create/',{
         method:'POST'
     })
         .then(response => response.json())
@@ -162,7 +161,6 @@ const mainContainerStyle={
 const backgroundStyle = {
     position:'fixed',
     zIndex:-1,
-    // objectFit:'scale-down',
     height:1475,
     width:1967,
     left:353,

@@ -3,14 +3,15 @@ import rock from './images/rock.jpg'
 import paper from './images/paper.jpg'
 import scissors from './images/scissors.png'
 import questionmark from './images/questionmark.png'
+import PieTimer from './PieTimer'
 
-export default function Display(props){
-    if(props.movesFromLastRound){
+export default function Display({userId, time, opponentName, score, movesFromLastRound}){
+    if(movesFromLastRound){
         var userMoveImage = imageOfLastMove(
-            props.movesFromLastRound[props.userId]
+            movesFromLastRound[userId]
         )
         var opponentMoveImage = imageOfLastMove(
-            props.movesFromLastRound[props.opponentName]
+            movesFromLastRound[opponentName]
         )
     } else {
         var userMoveImage = questionmark
@@ -19,12 +20,12 @@ export default function Display(props){
 
     return (
         <>    
-            <span style={roundNumberStyle}>round 5/5</span>
+            <span style={roundNumberStyle}><PieTimer time={time}/></span>
             <div style={displayContainerStyle}>
                 <img src={userMoveImage} 
                     style={userBoxStyle} />
                 <div style={middleBoxContainerStyle}>
-                    {displayScore(props.score)}
+                    {displayScore(score)}
                 </div>
                 <img src={opponentMoveImage} 
                     style={opponentBoxStyle} />

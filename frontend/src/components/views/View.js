@@ -1,13 +1,9 @@
 import React from 'react'
 import Spinner from './Spinner'
 import LandingView from './LandingView'
-export default function View(props){
-    const game = props.game
-    const match = props.match
-    const loading = props.loading
-    const userStats = props.userStats
-    const findOpponentButton = props.findOpponentButton
-    if (loading) { //do we put all this in a function? if yes, then many arguments: (loading,match,game,findOpponent)
+export default function View({game, match, loading, userStats, findOpponentButton}){
+
+    if (loading) { 
         var view = <Spinner/>
     } else {
         if (match.connected) {
@@ -17,9 +13,9 @@ export default function View(props){
                 userStats = {userStats}
                 findOpponentButton = {findOpponentButton}/>
         }
-    }  //modal, view landing or page for name choosing???
+    }  
     return(
-        <div style={viewContainerStyle}>{/*can become its own component?*/}
+        <div style={viewContainerStyle}>
             {view}
         </div> 
     )

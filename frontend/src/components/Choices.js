@@ -3,21 +3,21 @@ import rock from './images/rock.jpg'
 import paper from './images/paper.jpg'
 import scissors from './images/scissors.png'
 
-export default function Choice(props){
+export default function Choice({chosen,choiceClick}){
     return (
         <div style={{textAlign:'center'}}>
-            {displayChoices(props)}
+            {displayChoices(chosen,choiceClick)}
         </div>
     )
 }
 
-function displayChoices(props) {
+function displayChoices(chosen,choiceClick) {
     return [
         {image:rock, name:'rock'},
         {image:paper, name:'paper'}, 
         {image:scissors, name:'scissors'}
     ].map(choice =>{
-        if(choice.name==props.chosen){
+        if(choice.name==chosen){
             return <img src={choice.image} 
                 key={choice.name}
                 style={chosenStyle}/>
@@ -26,7 +26,7 @@ function displayChoices(props) {
                 key={choice.name}
                 style={choiceStyle}
                 id={choice.name}
-                onClick={props.choiceClick}/>
+                onClick={choiceClick}/>
         }
     })
 }
