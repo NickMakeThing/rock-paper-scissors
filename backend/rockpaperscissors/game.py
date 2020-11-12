@@ -5,20 +5,22 @@ from django.db import transaction
 import time
 
 class Timer():
-    def __init__(self):
+    def __init__(self, match):
         self.start_time = time.time()
         self.round_time = 0
         self.timeout_time = 0
         self.missed_round = 0
         self.game_finished = False
+        self.match = match
     
     def reset(self):
         self.round_time = 0
         self.timeout_time = 0
         self.missed_round = 0
         self.start_time = time.time()
+        refresh_client_timer(self.match,self.start_time)
 
-    def add_time(self):
+    def add_time(self):                     
         self.round_time = (time.time() - self.start_time)-(30*self.missed_round)
         self.timeout_time = time.time() - self.start_time
 
@@ -72,8 +74,7 @@ def send_to_channel_layer(winner,loser,rating_change=None):
                 'move': loser.move
             },
             'game_finished': rating_change,
-            'draw':False,
-            'time':time.time()
+            'draw':False
         }
     })  
 
@@ -92,7 +93,6 @@ def handle_draw(player1,player2):
         'message':{
                 'draw':True,
                 'move':player1.move,
-                'time':time.time()
             }
     })  
     player1.move = None
@@ -134,14 +134,14 @@ def complete_round_or_game(winner,loser,timer):
     else:
         complete_game(winner,loser,timer)
 
-def refresh_client_timer(match):
+def refresh_client_timer(match,time):
     channel_layer = channels.layers.get_channel_layer()
     async_to_sync(channel_layer.group_send)(match.name, {
     'type':'refresh.timer',
     'message':{
-            'time':time.time()
+            'time':time
         }
-})  
+    })
 
 def decide_default_winner(player1,player2,timer):
     if player1.move or player2.move:
@@ -155,7 +155,8 @@ def decide_default_winner(player1,player2,timer):
         timer.reset()
     else:
         timer.missed_round += 1
-        refresh_client_timer(player1.match)
+        round_start_time = timer.start_time+(30*timer.missed_round)
+        refresh_client_timer(player1.match,round_start_time)
 
 def end_game(either_player,timer):
     timer.stop()
@@ -191,12 +192,12 @@ def run_game(players, timers):
                         timer = timers[match]
                         game_round(player1,player2,timer)
                     else:
-                        timer = Timer()
+                        timer = Timer(match)
                         timers[match] = timer
-                        refresh_client_timer(match)
+                        refresh_client_timer(match,timer.start_time)
                         game_round(player1,player2,timer)
                     if timer.game_finished:
-                        del timers[match]  
+                        del timers[match]
                 else:
                     #error logging?
                     assert('player mismatch')

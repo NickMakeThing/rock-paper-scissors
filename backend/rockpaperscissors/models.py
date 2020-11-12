@@ -26,6 +26,7 @@ class PlayerMatch(models.Model):
     match = models.ForeignKey(Match, on_delete=models.CASCADE)
     move = models.CharField(max_length=1,choices=MOVE_CHOICES ,null=True)
     game_score = models.IntegerField(default=0)
+    round_start_time = models.IntegerField(null=True)
 
 
 

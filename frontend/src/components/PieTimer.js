@@ -5,24 +5,27 @@ import React, { useRef, useState, useEffect } from 'react'
     const [roundTime, setRoundTime] = useState(0)
 
     useEffect(() => {
-        var date = new Date
-        var startTime = date.getTime()
-        setRoundTime(30-((startTime - time)/1000)%30)
-        
-        var tick = () => {
-                setRoundTime(roundTime => {
-                    if(roundTime > 0.05){
-                        var date = new Date
-                        var newTime = date.getTime()
-                        return 30-((newTime - time)/1000)%30
-                    } else {
-                        return 0
-                    }
-                })
-        }
-        const repeat = setInterval(tick, 50)
-        return () => {
-            clearInterval(repeat)
+        if(time){
+            var date = new Date
+            var startTime = date.getTime()//this would break if client in different timezone.
+            //possible fix: set the timezone to get date/time from
+            setRoundTime(30-((startTime - time)/1000)%30)
+
+            var tick = () => {
+                    setRoundTime(roundTime => {
+                        if(roundTime > 0.05){
+                            var date = new Date
+                            var newTime = date.getTime()
+                            return 30-((newTime - time)/1000)%30
+                        } else {
+                            return 0
+                        }
+                    })
+            }
+            const repeat = setInterval(tick, 50)
+            return () => {
+                clearInterval(repeat)
+            }
         }
     },[time])
     // useEffect(() => {
@@ -47,9 +50,11 @@ import React, { useRef, useState, useEffect } from 'react'
             roundTime > 0.05 && context.lineTo(55,51)
             // context.strokeStyle='skyblue'
             context.stroke()
-            context.font = '50px Arial'
-            context.fillStyle='black'
-            context.fillText(Math.floor(roundTime),25,68)
+            if(time){
+                context.font = '50px Arial'
+                context.fillStyle='black'
+                context.fillText(Math.floor(roundTime),25,68)
+            }
         }
     }
     

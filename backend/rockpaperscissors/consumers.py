@@ -5,6 +5,7 @@ from asgiref.sync import async_to_sync
 from time import sleep
 from .forms import MoveForm
 import threading
+import time
 
 def getq():
         from django.db import connection
@@ -56,7 +57,6 @@ class MatchFindingConsumer(WebsocketConsumer): #revisit
 class GameUpdateConsumer(WebsocketConsumer):
     def connect(self):
         match = self.scope['path'].split('/')[3]
-        print(self.scope['cookies'])
         name=self.scope['cookies']['name']
         self.cookie = self.scope['cookies'][name]
         self.contestants = PlayerMatch.objects.filter(match__name=match).select_related('player','match')
@@ -76,7 +76,6 @@ class GameUpdateConsumer(WebsocketConsumer):
 
     def receive(self, text_data):
         data=json.loads(text_data)
-        print(data)
         form = MoveForm({'move':data['move']})
         print('match name validated')
         player_match = PlayerMatch.objects.get(player=self.player_playermatch.player)
@@ -90,18 +89,19 @@ class GameUpdateConsumer(WebsocketConsumer):
 
     def refresh_timer(self,update):
         self.time = update['message']['time']
-        print(self.time,hasattr(self,'time'))
         self.send(text_data=json.dumps(update))
 
     def send_game_state(self):
         player_score = self.player_playermatch.game_score
         opponent_score = self.opponent_playermatch.game_score
+        round_start_time = self.get_round_start_time()
+        print("GET TIME:",round_start_time)
         game_state={
             'type':'connect',
             'message':{
                 'player_score': player_score,
                 'opponent_score': opponent_score,
-                'time': self.time if hasattr(self,'time') else None
+                'time': round_start_time
                 }
         }
         self.send(text_data=json.dumps(game_state))
@@ -109,5 +109,23 @@ class GameUpdateConsumer(WebsocketConsumer):
     def disconnect(self, message):
         self.send(text_data=json.dumps(message))
         self.close()
+    
+    def websocket_disconnect(self,message):
+        if hasattr(self,'time'):
+            print('SAVING TIME:',self.time)
+            player_match = PlayerMatch.objects.filter(id=self.player_playermatch.id)
+            player_match.update(round_start_time=self.time)
+        super().websocket_disconnect(message)
         
-
+    def get_round_start_time(self):
+        if self.player_playermatch.round_start_time:
+            round_start_time = self.player_playermatch.round_start_time
+            if time.time() - round_start_time > 30:
+                print('ADDING 30')
+                round_start_time +=30
+            if time.time() - round_start_time > 60:
+                print('ADDING 60')
+                round_start_time +=60
+            return round_start_time
+        else:
+            return None

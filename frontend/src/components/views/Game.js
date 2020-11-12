@@ -12,11 +12,11 @@ export default function Game({webSocket, updateUserStats, userId, opponentName})
     const [time, setTime] = useState(null)
 
     useEffect(() => {    
-        const date = new Date
-        setTime(date.getTime())
         var message = webSocket.gameScore
         setScoreOnConnect(message,setScore)
-
+        if (message.time){
+            setTime(Math.round(message.time)*1000)
+        }
         var handleResize = () => {
             let newState = getGameScale()
             setGameScale(newState)
@@ -39,20 +39,24 @@ export default function Game({webSocket, updateUserStats, userId, opponentName})
     const choiceClick = e => {
         setChosen(e.target.id)
     }
-    
+    console.log(time)
     webSocket.onmessage = e => {
         var message = JSON.parse(e.data)
         switch(message.type){
-            case('connect'):
+            case('connect'): 
+            //bug: if both players reconnect at the same time
+            //one does not get a connect message, therefore timer on one does not work until next game.update/refresh.timer
+                var message = message.message
                 setScoreOnConnect(message,setScore)
-                console.log(message)
+                if (message.time){
+                    setTime(Math.round(message.time)*1000)
+                }
                 break
             case('disconnect'):
                 console.log(message.message)
                 break
             case('refresh.timer'):
                 var update = message.message
-                console.log('REFRESHING')
                 setTime(Math.round(update.time)*1000)
                 break
             case('game.update'):
@@ -118,12 +122,18 @@ function showEndOfGame(endOfGameDetails,webSocket){
     }
     return null
 }
-
+// function setScoreOnConnect(message,setScore){
+//     var game_state = message.message
+//     if(game_state){
+//         var wins = new Array(game_state.player_score).fill('win')
+//         var losses = new Array(game_state.opponent_score).fill('loss')
+//         setScore(wins.concat(losses))
+//     }
+// }
 function setScoreOnConnect(message,setScore){
-    var game_state = message.message
-    if(game_state){
-        var wins = new Array(game_state.player_score).fill('win')
-        var losses = new Array(game_state.opponent_score).fill('loss')
+    if(message){
+        var wins = new Array(message.player_score).fill('win')
+        var losses = new Array(message.opponent_score).fill('loss')
         setScore(wins.concat(losses))
     }
 }

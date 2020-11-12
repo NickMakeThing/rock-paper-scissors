@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import Cookies from 'js-cookie'
-import Header from './components/Header'
+//import Header from './components/Header'
 import Game from './components/views/Game'
 import FindOpponentButton from './components/FindOpponentButton'
 import View from './components/views/View'
-import scissors_background from './components/images/scissors_background.jpg'
+//import scissors_background from './components/images/scissors_background.jpg'
 
 export default function App(){
     const [opponentName, setOpponentName] = useState(null) 
@@ -116,7 +116,7 @@ function setCurrentUser(name){
 
 function connectToMatch(match,setMatch) {
     const webSocket = new WebSocket('ws://'+window.location.host+'/ws/match/'+match.name+'/')
-    webSocket.gameScore = {game_score:false}
+    webSocket.gameScore = false
 
     webSocket.onopen = function(e) {
         console.log('connected to match')
@@ -125,7 +125,7 @@ function connectToMatch(match,setMatch) {
 
     webSocket.onmessage = function(e) {
         const data = JSON.parse(e.data)   
-        webSocket.gameScore = data                             
+        webSocket.gameScore = data.message                            
     }
     
     webSocket.onclose = function(e) {
