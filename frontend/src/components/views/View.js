@@ -1,8 +1,8 @@
 import React from 'react'
 import Spinner from './Spinner'
 import LandingView from './LandingView'
-export default function View({game, match, loading, userStats, findOpponentButton}){
-
+export default function View({game, match, loading, userStats, findOpponentButton}){    
+    console.log('LOADING:',loading)
     if (loading) { 
         var view = <Spinner/>
     } else {

@@ -33,8 +33,10 @@ function findOpponent(state,userId) {
         state.setMatch({name:data.match_name,connected:false})
     }
     webSocket.onclose = function(e) {
- 
-        console.error('socket closed: match finding complete or a.')
+        if(!webSocket.match_found){
+            state.setLoading(false)
+        }
+        console.error('socket closed.')
     }
     setTimeout(() => {
         console.log('userId sent')

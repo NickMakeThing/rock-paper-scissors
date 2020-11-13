@@ -89,7 +89,7 @@ export default function App(){
                     loading={loading}
                     userStats={userStats}
                     findOpponentButton={findOpponentButton}/>
-                <img src={'http://localhost:8080/src/components/images/scissors_background.jpg'} style={background}/>
+                <img src={'http://192.168.0.16:11224/src/components/images/scissors_background.jpg'} style={background}/>
                 <div style={whiteStyle}/>
             </div>
 }

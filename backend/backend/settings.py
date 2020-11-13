@@ -144,7 +144,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
-STATIC_URL = 'http://127.0.0.1:8080/' #'/static/'
+#STATIC_URL = 'http://127.0.0.1:8080/' #'/static/'
+STATIC_URL = 'http://192.168.0.16:11224/' #'/static/'
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'rockpaperscissors/static'),

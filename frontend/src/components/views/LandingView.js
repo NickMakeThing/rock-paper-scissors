@@ -24,6 +24,7 @@ export default function LandingView({userStats, findOpponentButton}){
 
 
 const headingStyle = {
+    whiteSpace: 'nowrap',
     position:'absolute',
     fontSize:60,
     top:292,
@@ -31,6 +32,7 @@ const headingStyle = {
 }
 
 const infoStyle = {
+    whiteSpace: 'nowrap',
     position:'absolute',
     fontSize:40,
     top:381,

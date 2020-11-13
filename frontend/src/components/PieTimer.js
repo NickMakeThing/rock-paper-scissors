@@ -50,11 +50,11 @@ import React, { useRef, useState, useEffect } from 'react'
             roundTime > 0.05 && context.lineTo(55,51)
             // context.strokeStyle='skyblue'
             context.stroke()
-            if(time){
-                context.font = '50px Arial'
-                context.fillStyle='black'
-                context.fillText(Math.floor(roundTime),25,68)
-            }
+            // if(time){
+            //     context.font = '50px Arial'
+            //     context.fillStyle='black'
+            //     context.fillText(Math.floor(roundTime),25,68)
+            // }
         }
     }
     

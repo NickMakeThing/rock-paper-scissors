@@ -19,8 +19,8 @@ export default function Display({userId, time, opponentName, score, movesFromLas
     }
 
     return (
-        <>    
-            <span style={roundNumberStyle}><PieTimer time={time}/></span>
+        <>    {/*if game finished, stop showing timer? */}
+            <span style={timerStyle}><PieTimer time={time}/></span>
             <div style={displayContainerStyle}>
                 <img src={userMoveImage} 
                     style={userBoxStyle} />
@@ -60,18 +60,23 @@ const displayContainerStyle = {
     display:'flex'
 }
 
+var size = 1
+if (screen.height<=900){
+    size = 0.5
+}
+
 const userBoxStyle = {
     display: 'inline-block',
-    width:'300px',
-    height:'300px',
-    marginRight:'50px',
+    width:300*size,
+    height:300*size,
+    marginRight:50*size
 }
 
 const opponentBoxStyle = {
     display: 'inline-block',
-    width:'300px',
-    height:'300px',
-    marginLeft:'50px'
+    width:300*size,
+    height:300*size,
+    marginLeft:50*size
 }
 
 const middleBoxStyle = {
@@ -88,7 +93,7 @@ const middleBoxContainerStyle = {
     width: '57px', 
 }
 
-const roundNumberStyle = {
+const timerStyle = {
     display:'inline-block',
     textAlign: 'center',
     marginTop:'50px'
