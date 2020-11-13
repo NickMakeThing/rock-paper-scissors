@@ -29,7 +29,7 @@ class CreatePlayerView(CreateAPIView):
         return response
 
 
-class SendPlayerDataView(ListAPIView): #change name (leaderboarddata?)
+class RankDataView(ListAPIView): #change name (leaderboarddata?)
     serializer_class = PlayerDataSerializer
     queryset = PlayerStatus.objects.all().exclude(wins=0,losses=0).order_by('-score')
 

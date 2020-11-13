@@ -55,8 +55,10 @@ def test_complete_round():
     assert bob.game_score == 1 and greg.game_score == 0
     assert bob.move == greg.move == None   
 
+@pytest.mark.django_db
 def test_timer():
-    timer = game.Timer()
+    data = make_data('bob','greg')
+    timer = game.Timer(data['match'])
     sleep(1)
     timer.add_time()
     assert timer.round_time > 1 and timer.round_time < 1.1
@@ -74,10 +76,10 @@ def test_timer():
 
 @pytest.mark.django_db
 def test_complete_game():
-    timer = game.Timer()
     data = make_data('bob','greg')
     bob_match = data['player1']
     greg_match = data['player2']
+    timer = game.Timer(data['match'])
     bob = bob_match.player
     greg = greg_match.player
     assert timer.game_finished == False
@@ -94,11 +96,11 @@ def test_complete_game():
 
 @pytest.mark.django_db
 def test_game_round():
-    timer = game.Timer()
     data = make_data('bob','greg')
     bob = data['player1']
     greg = data['player2']
     match = data['match']
+    timer = game.Timer(match)
     assert bob.game_score == 0
     assert Match.objects.filter(name=match.name).exists() == True
     sleep(1)
@@ -121,11 +123,12 @@ def test_game_round():
             assert PlayerStatus.objects.get(name='bob').wins == 1
             assert Match.objects.filter(name=match.name).exists() == False
     PlayerStatus.objects.all().delete()
-    timer = game.Timer()
+    timer = game.Timer('match')
     data = make_data('bob','greg')
     bob = data['player1']
     greg = data['player2']
     match = data['match']
+    timer = game.Timer(match)
     timer.round_time = 31
     bob.move = 'r'; bob.save()
     game.game_round(bob,greg,timer)
@@ -141,7 +144,7 @@ def test_send_to_channel_layer(): #may need to redo to call function directly
     bob = data['player1']
     greg = data['player2']
     match = data['match']
-    timer=game.Timer()
+    timer=game.Timer(match)
     channel_layer = layers.get_channel_layer()
     async_to_sync(channel_layer.flush)()
     async_to_sync(channel_layer.group_add)(
@@ -154,6 +157,8 @@ def test_send_to_channel_layer(): #may need to redo to call function directly
         greg.move = 's'; greg.save()
         game.game_round(bob,greg,timer)
         response = async_to_sync(channel_layer.receive)('test_channel')
+        if 'time' in response['message']:
+            response = async_to_sync(channel_layer.receive)('test_channel')
         message = response['message']
         if i == 0:
             assert message['winner']['name'] == 'bob'

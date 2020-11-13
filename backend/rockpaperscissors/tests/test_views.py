@@ -1,5 +1,5 @@
 import pytest
-from rockpaperscissors.views import CreatePlayerView, SendPlayerDataView, PlayerStats
+from rockpaperscissors.views import CreatePlayerView, RankDataView, PlayerStats
 from rockpaperscissors.models import PlayerStatus
 from rest_framework.test import APIRequestFactory
 from django.urls import reverse
@@ -23,10 +23,10 @@ def test_create_player():
     assert response.data['name'] == 'guest-1'
 
 @pytest.mark.django_db
-def test_send_player_data_view():
+def test_rank_data_view():
     def get_request(url):
         request = APIRequestFactory().get(url)
-        view = SendPlayerDataView.as_view()
+        view = RankDataView.as_view()
         response = view(request)
         return response
     
@@ -71,7 +71,7 @@ def test_player_stats():
     PlayerStatus.objects.create(name='bob',score=110,wins=12,losses=5)
     PlayerStatus.objects.bulk_create([PlayerStatus(name=i) for i in range(25)])
     request = APIRequestFactory().get('/player/bob')
-    view = SendPlayerDataView.as_view()
+    view = RankDataView.as_view()
     response = view(request)
     assert (200 <= response.status_code <= 299) 
     player = dict(response.data)['results'][0]
