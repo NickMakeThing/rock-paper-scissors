@@ -77,10 +77,8 @@ class GameUpdateConsumer(WebsocketConsumer):
     def receive(self, text_data):
         data=json.loads(text_data)
         form = MoveForm({'move':data['move']})
-        print('match name validated')
         player_match = PlayerMatch.objects.get(player=self.player_playermatch.player)
         if form.is_valid():
-            print('message validated')
             player_match.move = data['move']
             player_match.save()
 
@@ -95,7 +93,6 @@ class GameUpdateConsumer(WebsocketConsumer):
         player_score = self.player_playermatch.game_score
         opponent_score = self.opponent_playermatch.game_score
         round_start_time = self.get_round_start_time()
-        print("GET TIME:",round_start_time)
         game_state={
             'type':'connect',
             'message':{
@@ -112,7 +109,6 @@ class GameUpdateConsumer(WebsocketConsumer):
     
     def websocket_disconnect(self,message):
         if hasattr(self,'time'):
-            print('SAVING TIME:',self.time)
             player_match = PlayerMatch.objects.filter(id=self.player_playermatch.id)
             player_match.update(round_start_time=self.time)
         super().websocket_disconnect(message)
@@ -121,10 +117,8 @@ class GameUpdateConsumer(WebsocketConsumer):
         if self.player_playermatch.round_start_time:
             round_start_time = self.player_playermatch.round_start_time
             if time.time() - round_start_time > 30:
-                print('ADDING 30')
                 round_start_time +=30
             if time.time() - round_start_time > 60:
-                print('ADDING 60')
                 round_start_time +=60
             return round_start_time
         else:
