@@ -14,7 +14,7 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'ybtlq6zgg7if%13yj19pu7qp^xnx1fp+54*d8-)44yjz3%y^4@'
+SECRET_KEY = 'ybtlq6zgg7if%13yj19pu7qp^xnx1fp+54*d8-)44yjz3%y^4@' #change and retrieve from environment vars for prod
 
 
 DEBUG = True
@@ -99,9 +99,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'rockpaperscissors',
-        'USER': 'rockpaperscissors',
-        'PASSWORD': 'password',
-        'HOST': 'localhost',
+        'USER': 'rockpaperscissors',  #change and retrieve from environment vars for prod
+        'PASSWORD': 'password', #change and retrieve from environment vars for prod
+        'HOST': 'localhost', 
         'PORT': '',
     }
 }
@@ -145,10 +145,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 #STATIC_URL = 'http://127.0.0.1:8080/' #'/static/'
+
+""" static files options must be changed for deployment """
 STATIC_URL = 'http://192.168.0.16:11224/' #'/static/'
 
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'rockpaperscissors/static'),
+    os.path.join(BASE_DIR, 'rockpaperscissors/static'),  
 )
 
 
